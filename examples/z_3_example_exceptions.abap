@@ -38,42 +38,42 @@ report z_3_example_exceptions.
 include: z_casdk_definition, z_casdk_implementation.
 
 start-of-selection.
-    data static_exception type ref to casdk_exception.
-    data dynamic_exception type ref to casdk_runtime_exception.
+    data static_exception type ref to casdk_cx_static_exception.
+    data dynamic_exception type ref to casdk_cx_dynamic_exception.
 
     try.
         "Raise the base static exception
-        new casdk_exception(
+        new casdk_cx_static_exception(
             msgv1 = 'Error (Part 1).' "Optional Parameter
             msgv2 = 'Error (Part 2).' "Optional Parameter
             msgv3 = 'Error (Part 3).' "Optional Parameter
             msgv4 = 'Error (Part 4).' "Optional Parameter
         )->raise_exception(  ).
-    catch casdk_exception into static_exception.
-        casdk_utils=>print( 'Example 1: ' ).
-        casdk_utils=>println( static_exception ).
+    catch casdk_cx_static_exception into static_exception.
+        casdk_cl_utils=>print( 'Example 1: ' ).
+        casdk_cl_utils=>println( static_exception ).
     endtry.
 
     try.
         "Raise the base dynamic exception
-        new casdk_runtime_exception( msgv1 = 'Runtime_Error' )->raise_exception( ).
-    catch casdk_runtime_exception into dynamic_exception.
-        casdk_utils=>print( 'Example 2: ' ).
-        casdk_utils=>println( dynamic_exception ).
+        new casdk_cx_dynamic_exception( msgv1 = 'Runtime_Error' )->raise_exception( ).
+    catch casdk_cx_dynamic_exception into dynamic_exception.
+        casdk_cl_utils=>print( 'Example 2: ' ).
+        casdk_cl_utils=>println( dynamic_exception ).
     endtry.
 
     try.
         "Raise a null pointer exception
-        new casdk_null_pointer_exception( msgv1 = 'Null_Pointer_Error' )->raise_exception(  ).
-    catch casdk_null_pointer_exception into dynamic_exception.
-       casdk_utils=>print( 'Example 3: ' ).
-       casdk_utils=>println(  dynamic_exception ).
+        new casdk_cx_nullpointer( msgv1 = 'Null_Pointer_Error' )->raise_exception(  ).
+    catch casdk_cx_nullpointer into dynamic_exception.
+       casdk_cl_utils=>print( 'Example 3: ' ).
+       casdk_cl_utils=>println(  dynamic_exception ).
     endtry.
 
     try.
         "Raise a number format exception
-        new casdk_numberformat_exception( msgv1 = 'Number_Format_Error' )->raise_exception(  ).
-    catch casdk_numberformat_exception into dynamic_exception.
-        casdk_utils=>print( 'Example 4: ' ).
-        casdk_utils=>println( dynamic_exception ).
+        new casdk_cx_numberformat( msgv1 = 'Number_Format_Error' )->raise_exception(  ).
+    catch casdk_cx_numberformat into dynamic_exception.
+        casdk_cl_utils=>print( 'Example 4: ' ).
+        casdk_cl_utils=>println( dynamic_exception ).
     endtry.

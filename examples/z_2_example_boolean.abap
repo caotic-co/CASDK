@@ -39,53 +39,53 @@ include: z_casdk_definition, z_casdk_implementation.
 
 start-of-selection.
     "New true object
-    data(true_obj) = casdk_boolean=>true(  ).
-    casdk_utils=>print( 'Example 1: ' ).
-    casdk_utils=>println( true_obj ). "Prints 'true'
+    data(true_obj) = casdk_cl_boolean=>true(  ).
+    casdk_cl_utils=>print( 'Example 1: ' ).
+    casdk_cl_utils=>println( true_obj ). "Prints 'true'
 
     "New false object
-    data(false_obj) = casdk_boolean=>false(  ).
-    casdk_utils=>print( 'Example 2: ' ).
-    casdk_utils=>println( false_obj ). "Prints 'false'
+    data(false_obj) = casdk_cl_boolean=>false(  ).
+    casdk_cl_utils=>print( 'Example 2: ' ).
+    casdk_cl_utils=>println( false_obj ). "Prints 'false'
 
     "AND between Boolean objects
-    data(and_operation) = casdk_boolean=>logical_and( a = true_obj b = false_obj ).
-    casdk_utils=>print( 'Example 3: ' ).
-    casdk_utils=>println( casdk_boolean=>value_of( and_operation ) ). "Prints 'false'
+    data(and_operation) = casdk_cl_boolean=>logical_and( a = true_obj b = false_obj ).
+    casdk_cl_utils=>print( 'Example 3: ' ).
+    casdk_cl_utils=>println( casdk_cl_boolean=>value_of( and_operation ) ). "Prints 'false'
 
     "OR between Boolean objects
-    data(or_operation) = casdk_boolean=>logical_or( a = true_obj b = false_obj ).
-    casdk_utils=>print( 'Example 4: ' ).
-    casdk_utils=>println( casdk_boolean=>value_of( or_operation ) ). "Prints 'true'
+    data(or_operation) = casdk_cl_boolean=>logical_or( a = true_obj b = false_obj ).
+    casdk_cl_utils=>print( 'Example 4: ' ).
+    casdk_cl_utils=>println( casdk_cl_boolean=>value_of( or_operation ) ). "Prints 'true'
 
     "NOT of a Boolean object
-    data(not_obj) = casdk_boolean=>logical_not( true_obj ).
-    casdk_utils=>print( 'Example 5: ' ).
-    casdk_utils=>println( casdk_boolean=>value_of( not_obj ) ). "Prints 'false'
+    data(not_obj) = casdk_cl_boolean=>logical_not( true_obj ).
+    casdk_cl_utils=>print( 'Example 5: ' ).
+    casdk_cl_utils=>println( casdk_cl_boolean=>value_of( not_obj ) ). "Prints 'false'
 
     "Nested Logical Operations
-    data(complex_operation) = casdk_boolean=>logical_and(
-        a = casdk_boolean=>logical_or( a = true_obj b = false_obj )
-        b = casdk_boolean=>logical_or( a = true_obj b = false_obj )
+    data(complex_operation) = casdk_cl_boolean=>logical_and(
+        a = casdk_cl_boolean=>logical_or( a = true_obj b = false_obj )
+        b = casdk_cl_boolean=>logical_or( a = true_obj b = false_obj )
     ).
-    casdk_utils=>print( 'Example 6: ' ).
-    casdk_utils=>println( casdk_boolean=>value_of( complex_operation ) ). "Prints 'true'
+    casdk_cl_utils=>print( 'Example 6: ' ).
+    casdk_cl_utils=>println( casdk_cl_boolean=>value_of( complex_operation ) ). "Prints 'true'
 
     "Use of objects on if statements
-    data(boolean) = casdk_boolean=>true(  ).
-    casdk_utils=>print( 'Example 7: ' ).
+    data(boolean) = casdk_cl_boolean=>true(  ).
+    casdk_cl_utils=>print( 'Example 7: ' ).
     if boolean->get_value(  ) = casdk_true.
-        casdk_utils=>println( 'The Boolean value is true' ).
+        casdk_cl_utils=>println( 'The Boolean value is true' ).
     else.
-        casdk_utils=>println( 'The Boolean value is false' ).
+        casdk_cl_utils=>println( 'The Boolean value is false' ).
     endif.
 
     "Compare two Boolean objects
-    data(boolean1) = casdk_boolean=>true(  ).
-    data(boolean2) = casdk_boolean=>false(  ).
-    casdk_utils=>print( 'Example 8: ' ).
+    data(boolean1) = casdk_cl_boolean=>true(  ).
+    data(boolean2) = casdk_cl_boolean=>false(  ).
+    casdk_cl_utils=>print( 'Example 8: ' ).
     if boolean1->equals( boolean2 ) = casdk_true.
-        casdk_utils=>println( ' The two Booleans are equal' ).
+        casdk_cl_utils=>println( ' The two Booleans are equal' ).
     else.
-        casdk_utils=>println( 'The two Booleans are not equal' ).
+        casdk_cl_utils=>println( 'The two Booleans are not equal' ).
     endif.

@@ -40,48 +40,61 @@
 
 
 *--------------------------------------------------------------*
-* RAW TYPES                                                    *
+* CASDK RAW TYPES                                              *
 *--------------------------------------------------------------*
 
 types:
-    casdk_bool            type c length 1,
-    casdk_int             type i,
-    casdk_float           type f,
-    casdk_long            type dec20,
-    casdk_str             type string,
-    casdk_byte            type x length 32000,
-    casdk_byte_str        type xstring,
-    casdk_date            type d,
-    casdk_time            type t,
-    casdk_timestamp       type timestamp,
-    casdk_msg             type c length 50,
-    casdk_bool_array      type standard table of casdk_bool            with default key,
-    casdk_int_array       type standard table of casdk_int             with default key,
-    casdk_float_array     type standard table of casdk_float           with default key,
-    casdk_long_array      type standard table of casdk_long            with default key,
-    casdk_str_array       type standard table of casdk_str             with default key,
-    casdk_byte_array      type standard table of casdk_byte            with default key,
-    casdk_byte_str_array  type standard table of casdk_byte_str        with default key,
-    casdk_bool_matrix     type standard table of casdk_bool_array      with default key,
-    casdk_int_matrix      type standard table of casdk_int_array       with default key,
-    casdk_float_matrix    type standard table of casdk_float_array     with default key,
-    casdk_long_matrix     type standard table of casdk_long_array      with default key,
-    casdk_str_matrix      type standard table of casdk_str_array       with default key,
-    casdk_byte_matrix     type standard table of casdk_byte_array      with default key,
-    casdk_byte_str_matrix type standard table of casdk_byte_str_array  with default key.
+    casdk_raw_boolean               type c length 1,
+    casdk_raw_integer               type i,
+    casdk_raw_float                 type f,
+    casdk_raw_long                  type dec20,
+    casdk_raw_string                type string,
+    casdk_raw_byte                  type x length 32000,
+    casdk_raw_byte_string           type xstring,
+    casdk_raw_date                  type d,
+    casdk_raw_time                  type t,
+    casdk_raw_timestamp             type timestamp,
+    casdk_raw_message               type c length 50,
+    casdk_raw_boolean_array         type standard table of casdk_raw_boolean            with default key,
+    casdk_raw_integer_array         type standard table of casdk_raw_integer            with default key,
+    casdk_raw_float_array           type standard table of casdk_raw_float              with default key,
+    casdk_raw_long_array            type standard table of casdk_raw_long               with default key,
+    casdk_raw_string_array          type standard table of casdk_raw_string             with default key,
+    casdk_raw_byte_array            type standard table of casdk_raw_byte               with default key,
+    casdk_raw_byte_string_array     type standard table of casdk_raw_byte_string        with default key,
+    casdk_raw_boolean_matrix        type standard table of casdk_raw_boolean_array      with default key,
+    casdk_raw_integer_matrix        type standard table of casdk_raw_integer_array      with default key,
+    casdk_raw_float_matrix          type standard table of casdk_raw_float_array        with default key,
+    casdk_raw_long_matrix           type standard table of casdk_raw_long_array         with default key,
+    casdk_raw_string_matrix         type standard table of casdk_raw_string_array       with default key,
+    casdk_raw_byte_matrix           type standard table of casdk_raw_byte_array         with default key,
+    casdk_raw_byte_string_matrix    type standard table of casdk_raw_byte_string_array  with default key.
 
 
 *--------------------------------------------------------------*
-* CONSTANTS                                                    *
+* CASDK BOOLEAN VALUES                                         *
 *--------------------------------------------------------------*
 
 constants:
-    casdk_mayor_version  type casdk_int  value 1,
-    casdk_minor_version  type casdk_int  value 0,
-    casdk_patch_version  type casdk_int  value 0,
-    casdk_true           type casdk_bool value 'X',
-    casdk_false          type casdk_bool value ' ',
-    casdk_line_size      type casdk_int  value 200.
+    casdk_true  type casdk_raw_boolean value 'X',
+    casdk_false type casdk_raw_boolean value ' '.
+
+
+*--------------------------------------------------------------*
+* CASDK METADATA                                               *
+*--------------------------------------------------------------*
+
+constants:
+    casdk_metadata_mayor_version  type casdk_raw_integer  value 1,
+    casdk_metadata_minor_version  type casdk_raw_integer  value 0,
+    casdk_metadata_patch_version  type casdk_raw_integer  value 0.
+
+*--------------------------------------------------------------*
+* CASDK CONFIGURATION PARAMETERS                               *
+*--------------------------------------------------------------*
+
+constants:
+    casdk_confparam_line_size type casdk_raw_integer  value 200.
 
 
 *--------------------------------------------------------------*
@@ -89,7 +102,7 @@ constants:
 *--------------------------------------------------------------*
 
 "! Base exception for all CASDK static exceptions
-class casdk_exception definition create public inheriting from cx_static_check.
+class casdk_cx_static_exception definition create public inheriting from cx_static_check.
     public section.
         interfaces if_t100_dyn_msg.
 
@@ -99,23 +112,23 @@ class casdk_exception definition create public inheriting from cx_static_check.
         "! @parameter msgv3    | Third message line of the exceptions's reason
         "! @parameter msgv4    | Fourth message line of the exceptions's reason
         methods constructor
-            importing value(msgv1) type casdk_msg optional
-                      value(msgv2) type casdk_msg optional
-                      value(msgv3) type casdk_msg optional
-                      value(msgv4) type casdk_msg optional.
+            importing value(msgv1) type casdk_raw_message optional
+                      value(msgv2) type casdk_raw_message optional
+                      value(msgv3) type casdk_raw_message optional
+                      value(msgv4) type casdk_raw_message optional.
 
         "! Returns the full message associated to the exception
         methods get_message
-            returning value(result) type casdk_str.
+            returning value(result) type casdk_raw_string.
 
         "! Raises a new exception with the current messages
         methods raise_exception
-            raising casdk_exception.
+            raising casdk_cx_static_exception.
 endclass.
 *--------------------------------------------------------------*
 
 "! Base exception for all CASDK dynamic exceptions
-class casdk_runtime_exception definition create public inheriting from cx_dynamic_check.
+class casdk_cx_dynamic_exception definition create public inheriting from cx_dynamic_check.
     public section.
         interfaces if_t100_dyn_msg.
 
@@ -125,37 +138,37 @@ class casdk_runtime_exception definition create public inheriting from cx_dynami
         "! @parameter msgv3    | Third message line of the exceptions's reason
         "! @parameter msgv4    | Fourth message line of the exceptions's reason
         methods constructor
-            importing value(msgv1) type casdk_msg optional
-                      value(msgv2) type casdk_msg optional
-                      value(msgv3) type casdk_msg optional
-                      value(msgv4) type casdk_msg optional.
+            importing value(msgv1) type casdk_raw_message optional
+                      value(msgv2) type casdk_raw_message optional
+                      value(msgv3) type casdk_raw_message optional
+                      value(msgv4) type casdk_raw_message optional.
 
         "! Returns the full message associated to the exception
         methods get_message
-            returning value(result) type casdk_str.
+            returning value(result) type casdk_raw_string.
 
         "! Raises a new exception with the current messages
         methods raise_exception
-            raising casdk_runtime_exception.
+            raising casdk_cx_dynamic_exception.
 endclass.
 *--------------------------------------------------------------*
 
 "! Raised when the reference to an object is not initialized
-class casdk_null_pointer_exception definition create public inheriting from casdk_runtime_exception.
+class casdk_cx_nullpointer definition create public inheriting from casdk_cx_dynamic_exception.
     public section.
         methods raise_exception redefinition.
 endclass.
 *--------------------------------------------------------------*
 
 "! Raised when a string has the wrong format to be a number
-class casdk_numberformat_exception definition create public inheriting from casdk_runtime_exception.
+class casdk_cx_numberformat definition create public inheriting from casdk_cx_dynamic_exception.
     public section.
         methods raise_exception redefinition.
 endclass.
 *--------------------------------------------------------------*
 
 "! Raised when an error occurs during an arithmetic operation
-class casdk_arithmetic_exception definition create public inheriting from casdk_runtime_exception.
+class casdk_cx_arithmetic definition create public inheriting from casdk_cx_dynamic_exception.
     public section.
         methods raise_exception redefinition.
 endclass.
@@ -166,32 +179,32 @@ endclass.
 *--------------------------------------------------------------*
 
 "! Class containing methods about information of the CASDK
-class casdk_info definition final create private.
+class casdk_cl_metadata definition final create private.
     public section.
         "! Returns the current installed version of the CASDK
         "! @parameter full_version    | Current version formatted as '{MAJOR}.{MINOR}.{PATCH}
         class-methods full_version
-            returning value(full_version) type casdk_str.
+            returning value(full_version) type casdk_raw_string.
 
-        "! Returns the current major version as a casdk_int raw type
+        "! Returns the current major version as a casdk_raw_integer raw type
         "! @parameter major_version    | Current major version int
         class-methods major_version
-            returning value(major_version) type casdk_int.
+            returning value(major_version) type casdk_raw_integer.
 
-        "! Returns the current minor version as a casdk_int raw type
+        "! Returns the current minor version as a casdk_raw_integer raw type
         "! @parameter minor_version    | Current minor version int
         class-methods minor_version
-            returning value(minor_version) type casdk_int.
+            returning value(minor_version) type casdk_raw_integer.
 
-        "! Returns the current patch version as a casdk_int raw type
+        "! Returns the current patch version as a casdk_raw_integer raw type
         "! @parameter patch_version    | Current patch version int
         class-methods patch_version
-            returning value(patch_version) type casdk_int.
+            returning value(patch_version) type casdk_raw_integer.
 endclass.
 *--------------------------------------------------------------*
 
 "! Base class for all CASDK objects
-class casdk_object definition create public.
+class casdk_cl_object definition create public.
     public section.
       "! Initializes the object values.
       methods constructor.
@@ -199,73 +212,73 @@ class casdk_object definition create public.
       "! Returns the class_name of the current object
       "! @parameter result    | Retrieved class name
       methods class_name
-          returning value(result) type casdk_str.
+          returning value(result) type casdk_raw_string.
 
       "! Generates a hash code that can be used as index in hash data structures.
       "! @parameter result    | Generated hash code
       methods hash_code
-          returning value(result) type casdk_str.
+          returning value(result) type casdk_raw_string.
 
-      "! Compares if the current object is equal to another casdk_object
+      "! Compares if the current object is equal to another casdk_cl_object
       "! @parameter obj      | Object to compare against
       "! @parameter result   | Result bool flag of the comparison
       methods equals
           importing value(obj) type any
-          returning value(result) type casdk_bool.
+          returning value(result) type casdk_raw_boolean.
 
       "! Returns the representation of the object as a string
       "! @parameter result    | Generated string representation
       methods to_string
-          returning value(result) type casdk_str.
+          returning value(result) type casdk_raw_string.
 
     private section.
       types:
           begin of class_info,
-              class_name   type casdk_str,
-              object_count type casdk_long,
+              class_name   type casdk_raw_string,
+              object_count type casdk_raw_long,
           end of class_info.
 
       class-data attr_objects_info type hashed table of class_info with unique key class_name.
 
-      data attr_hash_code type casdk_long value 0.
+      data attr_hash_code type casdk_raw_long value 0.
 endclass.
 *--------------------------------------------------------------*
 
 "! CASDK boolean object
-class casdk_boolean definition create private inheriting from casdk_object.
+class casdk_cl_boolean definition create private inheriting from casdk_cl_object.
     public section.
         "! Initializes the object value.
         "! @parameter bool    | Raw boolean value to be assigned
         methods constructor
-            importing value(bool) type casdk_bool.
+            importing value(bool) type casdk_raw_boolean.
 
         "! Returns the current boolean value of the object
         "! @parameter result    | Current raw boolean value of the object
         methods get_value
-            returning value(result) type casdk_bool.
+            returning value(result) type casdk_raw_boolean.
 
         "! Factory that creates a new Boolean object with a true value
-        "! @parameter result    | Generated true casdk_boolean object
+        "! @parameter result    | Generated true casdk_cl_boolean object
         class-methods true
-            returning value(result) type ref to casdk_boolean.
+            returning value(result) type ref to casdk_cl_boolean.
 
         "! Factory that creates a new Boolean object with a false value
-        "! @parameter result    | Generated false casdk_boolean object
+        "! @parameter result    | Generated false casdk_cl_boolean object
         class-methods false
-            returning value(result) type ref to casdk_boolean.
+            returning value(result) type ref to casdk_cl_boolean.
 
-        "! Factory that creates a new Boolean object based on a casdk_bool raw value
-        "! @parameter result    | Generated casdk_boolean object
+        "! Factory that creates a new Boolean object based on a casdk_raw_boolean raw value
+        "! @parameter result    | Generated casdk_cl_boolean object
         class-methods value_of
-            importing value(bool) type casdk_bool
-            returning value(result) type ref to casdk_boolean.
+            importing value(bool) type casdk_raw_boolean
+            returning value(result) type ref to casdk_cl_boolean.
 
         "! Logical 'NOT' operation between Boolean objects
         "! @parameter boolean    | Input to be negated
         "! @parameter result     | Raw boolean value generated from negating the input
         class-methods logical_not
             importing value(boolean) type any
-            returning value(result) type casdk_bool.
+            returning value(result) type casdk_raw_boolean.
 
         "! Logical 'AND' operation between Boolean objects
         "! @parameter a    | Left predicate element of the operation
@@ -273,7 +286,7 @@ class casdk_boolean definition create private inheriting from casdk_object.
         class-methods logical_and
             importing value(a) type any
                       value(b) type any
-            returning value(result) type casdk_bool.
+            returning value(result) type casdk_raw_boolean.
 
         "! Logical 'OR' operation between Boolean objects
         "! @parameter a    | Left predicate element of the operation
@@ -281,48 +294,48 @@ class casdk_boolean definition create private inheriting from casdk_object.
         class-methods logical_or
             importing value(a) type any
                       value(b) type any
-            returning value(result) type casdk_bool.
+            returning value(result) type casdk_raw_boolean.
 
         methods hash_code redefinition.
         methods equals redefinition.
         methods to_string redefinition.
 
     private section.
-        data attr_value type casdk_bool value casdk_false.
-        class-data attr_true type ref to casdk_boolean.
-        class-data attr_false type ref to casdk_boolean.
+        data attr_value type casdk_raw_boolean value casdk_false.
+        class-data attr_true type ref to casdk_cl_boolean.
+        class-data attr_false type ref to casdk_cl_boolean.
 
 endclass.
 *--------------------------------------------------------------*
 
 "! Class with utilities and helpers for the CASDK
-class casdk_utils definition create private final inheriting from casdk_object.
+class casdk_cl_utils definition create private final inheriting from casdk_cl_object.
     public section.
 
         "! Evaluates if a given object or variable is a pointer
         "! @parameter obj    | Object or Variable to be evaluated
         class-methods is_pointer
             importing value(obj)    type any
-            returning value(result) type casdk_bool.
+            returning value(result) type casdk_raw_boolean.
 
         "! Evaluates if a given object is a pointer with no reference
         "! @parameter obj    | Object or Variable to be evaluated
         class-methods is_null_pointer
             importing value(obj)    type any
-            returning value(result) type casdk_bool.
+            returning value(result) type casdk_raw_boolean.
 
 
         "! Evaluates if a given value is a string
         "! @parameter value    | Value to be evaluated
         class-methods is_string
             importing value(value)  type any
-            returning value(result) type casdk_bool.
+            returning value(result) type casdk_raw_boolean.
 
         "! Evaluates if a given value is numeric
         "! @parameter value    | Value to be evaluated
         class-methods is_numeric
             importing value(value)  type any
-            returning value(result) type casdk_bool.
+            returning value(result) type casdk_raw_boolean.
 
         "! Replaces a text for a new one a given amount of times in an input string.
         "! @parameter input_str    | String where the text is going to be replaced
@@ -331,33 +344,33 @@ class casdk_utils definition create private final inheriting from casdk_object.
         "! @parameter times        | Number of occurrences to be replaced. By default all occurrences will be replaced
         "! @parameter result       | Result string after the replacement.
         class-methods replace
-            importing value(input_str)  type casdk_str
-                      value(text)       type casdk_str
-                      value(new_text)   type casdk_str
-                      value(times)      type casdk_int optional
-            returning value(result)     type casdk_str.
+            importing value(input_str)  type casdk_raw_string
+                      value(text)       type casdk_raw_string
+                      value(new_text)   type casdk_raw_string
+                      value(times)      type casdk_raw_integer optional
+            returning value(result)     type casdk_raw_string.
 
         "! Print to console a given object or variable
         "! @parameter obj                        | Object or Variable to be printed
-        "! @raising casdk_runtime_exception      | Error if the object can't be printed
+        "! @raising casdk_cx_dynamic_exception   | Error if the object can't be printed
         class-methods print
             importing value(obj) type any optional
-            raising casdk_runtime_exception.
+            raising casdk_cx_dynamic_exception.
 
         "! Print to console a given object or variable and adds a new line at the end
         "! @parameter obj                        | Object or Variable to be printed
-        "! @raising casdk_runtime_exception      | Error if the object can't be printed
+        "! @raising casdk_cx_dynamic_exception   | Error if the object can't be printed
         class-methods println
             importing value(obj) type any optional
-            raising casdk_runtime_exception.
+            raising casdk_cx_dynamic_exception.
 
     private section.
-        class-data is_print_line_size_set type casdk_bool value casdk_false.
-        class-data print_buffer type casdk_int value casdk_line_size.
+        class-data is_print_line_size_set type casdk_raw_boolean value casdk_false.
+        class-data print_buffer type casdk_raw_integer value casdk_confparam_line_size.
 
         class-methods reduce_print_buffer
-            importing value(amount) type casdk_int
-            raising casdk_runtime_exception.
+            importing value(amount) type casdk_raw_integer
+            raising casdk_cx_dynamic_exception.
 
         class-methods reset_print_buffer.
 endclass.
