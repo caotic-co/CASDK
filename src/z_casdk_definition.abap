@@ -81,6 +81,15 @@ constants:
 
 
 *--------------------------------------------------------------*
+* CASDK CONFIGURATION PARAMETERS                               *
+*--------------------------------------------------------------*
+
+constants:
+    casdk_confparam_line_size type casdk_raw_integer  value 200.
+
+
+
+*--------------------------------------------------------------*
 * CASDK METADATA                                               *
 *--------------------------------------------------------------*
 
@@ -90,12 +99,29 @@ constants:
     casdk_metadata_patch_version  type casdk_raw_integer  value 0.
 
 
-*--------------------------------------------------------------*
-* CASDK CONFIGURATION PARAMETERS                               *
-*--------------------------------------------------------------*
+"! Class containing methods about information of the CASDK
+class casdk_cl_metadata definition final create private.
+    public section.
+        "! Returns the current installed version of the CASDK
+        "! @parameter full_version    | Current version formatted as '{MAJOR}.{MINOR}.{PATCH}
+        class-methods full_version
+            returning value(full_version) type casdk_raw_string.
 
-constants:
-    casdk_confparam_line_size type casdk_raw_integer  value 200.
+        "! Returns the current major version as a casdk_raw_integer raw type
+        "! @parameter major_version    | Current major version int
+        class-methods major_version
+            returning value(major_version) type casdk_raw_integer.
+
+        "! Returns the current minor version as a casdk_raw_integer raw type
+        "! @parameter minor_version    | Current minor version int
+        class-methods minor_version
+            returning value(minor_version) type casdk_raw_integer.
+
+        "! Returns the current patch version as a casdk_raw_integer raw type
+        "! @parameter patch_version    | Current patch version int
+        class-methods patch_version
+            returning value(patch_version) type casdk_raw_integer.
+endclass.
 
 
 *--------------------------------------------------------------*
@@ -177,31 +203,6 @@ endclass.
 
 *--------------------------------------------------------------*
 * CLASSES                                                      *
-*--------------------------------------------------------------*
-
-"! Class containing methods about information of the CASDK
-class casdk_cl_metadata definition final create private.
-    public section.
-        "! Returns the current installed version of the CASDK
-        "! @parameter full_version    | Current version formatted as '{MAJOR}.{MINOR}.{PATCH}
-        class-methods full_version
-            returning value(full_version) type casdk_raw_string.
-
-        "! Returns the current major version as a casdk_raw_integer raw type
-        "! @parameter major_version    | Current major version int
-        class-methods major_version
-            returning value(major_version) type casdk_raw_integer.
-
-        "! Returns the current minor version as a casdk_raw_integer raw type
-        "! @parameter minor_version    | Current minor version int
-        class-methods minor_version
-            returning value(minor_version) type casdk_raw_integer.
-
-        "! Returns the current patch version as a casdk_raw_integer raw type
-        "! @parameter patch_version    | Current patch version int
-        class-methods patch_version
-            returning value(patch_version) type casdk_raw_integer.
-endclass.
 *--------------------------------------------------------------*
 
 "! Base class for all CASDK objects

@@ -38,6 +38,28 @@
 * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.       *
 *--------------------------------------------------------------*
 
+*--------------------------------------------------------------*
+* CASDK METADATA                                               *
+*--------------------------------------------------------------*
+
+class casdk_cl_metadata implementation.
+    method full_version.
+        full_version = |{ casdk_metadata_mayor_version }.{ casdk_metadata_minor_version }.{ casdk_metadata_patch_version }|.
+    endmethod.
+
+    method major_version.
+        major_version = casdk_metadata_mayor_version.
+    endmethod.
+
+    method minor_version.
+        minor_version = casdk_metadata_minor_version.
+    endmethod.
+
+    method patch_version.
+        patch_version = casdk_metadata_patch_version.
+    endmethod.
+endclass.
+
 
 *--------------------------------------------------------------*
 * EXCEPTIONS                                                   *
@@ -207,25 +229,6 @@ endclass.
 
 *--------------------------------------------------------------*
 * CLASSES                                                      *
-*--------------------------------------------------------------*
-
-class casdk_cl_metadata implementation.
-    method full_version.
-        full_version = |{ casdk_metadata_mayor_version }.{ casdk_metadata_minor_version }.{ casdk_metadata_patch_version }|.
-    endmethod.
-
-    method major_version.
-        major_version = casdk_metadata_mayor_version.
-    endmethod.
-
-    method minor_version.
-        minor_version = casdk_metadata_minor_version.
-    endmethod.
-
-    method patch_version.
-        patch_version = casdk_metadata_patch_version.
-    endmethod.
-endclass.
 *--------------------------------------------------------------*
 
 class casdk_cl_object implementation.
