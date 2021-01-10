@@ -463,10 +463,10 @@ class casdk_cl_utils implementation.
             if obj is instance of casdk_cl_object.
                 data(cast_obj) = cast casdk_cl_object( obj ).
                 out = cast_obj->to_string(  ).
-            elseif casdk_cl_utils=>is_pointer( obj ) = casdk_true and obj is instance of casdk_cx_static_exception.
+            elseif obj is instance of casdk_cx_static_exception.
                 data(cast_exception) = cast casdk_cx_static_exception( obj ).
                 out = cast_exception->get_message(  ).
-            elseif casdk_cl_utils=>is_pointer( obj ) = casdk_true and obj is instance of casdk_cx_dynamic_exception.
+            elseif obj is instance of casdk_cx_dynamic_exception.
                 data(cast_runtime_exception) = cast casdk_cx_dynamic_exception( obj ).
                 out = cast_runtime_exception->get_message(  ).
             else.

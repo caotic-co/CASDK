@@ -89,6 +89,7 @@ constants:
     casdk_metadata_minor_version  type casdk_raw_integer  value 0,
     casdk_metadata_patch_version  type casdk_raw_integer  value 0.
 
+
 *--------------------------------------------------------------*
 * CASDK CONFIGURATION PARAMETERS                               *
 *--------------------------------------------------------------*
