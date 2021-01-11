@@ -71,9 +71,25 @@ start-of-selection.
     endtry.
 
     try.
+        "Raise a cast error exception
+        new casdk_cx_cast_error( msgv1 = 'Cast_Error' )->raise_exception(  ).
+    catch casdk_cx_cast_error into dynamic_exception.
+       casdk_cl_utils=>print( 'Example 4: ' ).
+       casdk_cl_utils=>println(  dynamic_exception ).
+    endtry.
+
+    try.
         "Raise a number format exception
         new casdk_cx_numberformat( msgv1 = 'Number_Format_Error' )->raise_exception(  ).
     catch casdk_cx_numberformat into dynamic_exception.
-        casdk_cl_utils=>print( 'Example 4: ' ).
+        casdk_cl_utils=>print( 'Example 5: ' ).
+        casdk_cl_utils=>println( dynamic_exception ).
+    endtry.
+
+    try.
+        "Raise a number format exception
+        new casdk_cx_arithmetic( msgv1 = 'Arithmetic_Error' )->raise_exception(  ).
+    catch casdk_cx_arithmetic into dynamic_exception.
+        casdk_cl_utils=>print( 'Example 6: ' ).
         casdk_cl_utils=>println( dynamic_exception ).
     endtry.

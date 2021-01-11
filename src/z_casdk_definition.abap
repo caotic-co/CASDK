@@ -187,6 +187,13 @@ class casdk_cx_nullpointer definition create public inheriting from casdk_cx_dyn
 endclass.
 *--------------------------------------------------------------*
 
+"! Raised when a cast fails to be performed
+class casdk_cx_cast_error definition create public inheriting from casdk_cx_dynamic_exception.
+    public section.
+        methods raise_exception redefinition.
+endclass.
+*--------------------------------------------------------------*
+
 "! Raised when a string has the wrong format to be a number
 class casdk_cx_numberformat definition create public inheriting from casdk_cx_dynamic_exception.
     public section.
@@ -354,17 +361,27 @@ class casdk_cl_utils definition create private final inheriting from casdk_cl_ob
 
         "! Print to console a given object or variable
         "! @parameter obj                        | Object or Variable to be printed
+        "! @raising casdk_cx_cast_error          | Error if the object can't interpreted as string
         "! @raising casdk_cx_dynamic_exception   | Error if the object can't be printed
         class-methods print
             importing value(obj) type any optional
-            raising casdk_cx_dynamic_exception.
+            raising casdk_cx_cast_error
+                    casdk_cx_dynamic_exception.
 
         "! Print to console a given object or variable and adds a new line at the end
         "! @parameter obj                        | Object or Variable to be printed
+        "! @raising casdk_cx_cast_error          | Error if the object can't interpreted as string
         "! @raising casdk_cx_dynamic_exception   | Error if the object can't be printed
         class-methods println
             importing value(obj) type any optional
-            raising casdk_cx_dynamic_exception.
+            raising casdk_cx_cast_error
+                    casdk_cx_dynamic_exception.
+
+        "! Returns a quoted representation message of a string.
+        "! @parameter text    | Raw string to be quoted.
+        class-methods string_to_quoted_message
+            importing value(text) type casdk_raw_string
+            returning value(quoted_text) type casdk_raw_message.
 
     private section.
         class-data is_print_line_size_set type casdk_raw_boolean value casdk_false.

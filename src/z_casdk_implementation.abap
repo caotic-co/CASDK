@@ -193,6 +193,23 @@ class casdk_cx_nullpointer implementation.
 endclass.
 *--------------------------------------------------------------*
 
+class casdk_cx_cast_error implementation.
+    method raise_exception.
+        raise exception type casdk_cx_cast_error
+            message e000(error) with
+                me->if_t100_dyn_msg~msgv1
+                me->if_t100_dyn_msg~msgv2
+                me->if_t100_dyn_msg~msgv3
+                me->if_t100_dyn_msg~msgv4
+            exporting
+                msgv1 = me->if_t100_dyn_msg~msgv1
+                msgv2 = me->if_t100_dyn_msg~msgv2
+                msgv3 = me->if_t100_dyn_msg~msgv3
+                msgv4 = me->if_t100_dyn_msg~msgv4.
+    endmethod.
+endclass.
+*--------------------------------------------------------------*
+
 class casdk_cx_numberformat implementation.
     method raise_exception.
         raise exception type casdk_cx_numberformat
@@ -397,6 +414,19 @@ endclass.
 *--------------------------------------------------------------*
 
 class casdk_cl_utils implementation.
+    " Private Methods
+    method reduce_print_buffer.
+        if ( casdk_cl_utils=>print_buffer - amount ) < 0.
+            new casdk_cx_dynamic_exception( msgv1 = 'The print buffer cant have a size less than 0' )->raise_exception(  ).
+        endif.
+        casdk_cl_utils=>print_buffer = casdk_cl_utils=>print_buffer - amount.
+    endmethod.
+
+    method reset_print_buffer.
+        casdk_cl_utils=>print_buffer = casdk_confparam_line_size.
+    endmethod.
+
+    " Public Methods
     method is_pointer.
         describe field obj type data(obj_type).
          if obj_type = 'r'.
@@ -473,7 +503,7 @@ class casdk_cl_utils implementation.
                 data(cast_runtime_exception) = cast casdk_cx_dynamic_exception( obj ).
                 out = cast_runtime_exception->get_message(  ).
             else.
-                new casdk_cx_dynamic_exception(
+                new casdk_cx_cast_error(
                     msgv1 = 'The print method could not'
                     msgv2 = 'interpret the object as a string'
                 )->raise_exception(  ).
@@ -482,7 +512,7 @@ class casdk_cl_utils implementation.
             try.
                 out = obj.
             catch cx_root.
-                new casdk_cx_dynamic_exception(
+                new casdk_cx_cast_error(
                     msgv1 = 'The print method could not'
                     msgv2 = 'interpret the object as a string'
                 )->raise_exception(  ).
@@ -552,15 +582,13 @@ class casdk_cl_utils implementation.
         casdk_cl_utils=>reset_print_buffer(  ).
     endmethod.
 
-    method reduce_print_buffer.
-        if ( casdk_cl_utils=>print_buffer - amount ) < 0.
-            new casdk_cx_dynamic_exception( msgv1 = 'The print buffer cant have a size less than 0' )->raise_exception(  ).
+    method string_to_quoted_message.
+        if strlen( text ) <= 45.
+            concatenate '«' text '»' into quoted_text respecting blanks.
+        else.
+            data(cropped_text) = substring( val = text off = 0 len = 45 ).
+            concatenate '«' cropped_text '...»' into quoted_text respecting blanks.
         endif.
-        casdk_cl_utils=>print_buffer = casdk_cl_utils=>print_buffer - amount.
-    endmethod.
-
-    method reset_print_buffer.
-        casdk_cl_utils=>print_buffer = casdk_confparam_line_size.
     endmethod.
 endclass.
 *--------------------------------------------------------------*

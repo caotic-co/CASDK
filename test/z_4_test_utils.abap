@@ -54,6 +54,9 @@ class tests_cl_utils definition for testing duration short risk level harmless.
         "! Validates replacing text in a given string works fine.
         methods replace for testing.
 
+        "! Validates strings are correctly quoted.
+        methods string_to_quoted_message for testing.
+
 endclass.
 class tests_cl_utils implementation.
     method is_pointer.
@@ -192,6 +195,26 @@ class tests_cl_utils implementation.
                 times = 3
             )
             msg = 'CASE 3: The replace does not match the expected result'
+        ).
+    endmethod.
+
+    method string_to_quoted_message.
+        cl_aunit_assert=>assert_equals(
+            exp = '«123456789123456789123456789123456789123456789»'
+            act = casdk_cl_utils=>string_to_quoted_message( '123456789123456789123456789123456789123456789' )
+            msg = 'CASE 1: The string is not correctly quoted'
+        ).
+
+        cl_aunit_assert=>assert_equals(
+            exp = '«123456789123456789123456789123456789123456789...»'
+            act = casdk_cl_utils=>string_to_quoted_message( '123456789123456789123456789123456789123456789abcdef' )
+            msg = 'CASE 2: The string is not correctly quoted'
+        ).
+
+        cl_aunit_assert=>assert_equals(
+            exp = '«»'
+            act = casdk_cl_utils=>string_to_quoted_message( '' )
+            msg = 'CASE 3: The string is not correctly quoted'
         ).
     endmethod.
 endclass.
