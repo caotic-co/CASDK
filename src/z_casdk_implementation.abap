@@ -57,25 +57,25 @@ class casdk_cx_static_exception implementation.
     method constructor ##ADT_SUPPRESS_GENERATION.
         super->constructor(  ).
         if msgv1 is initial.
-            me->if_t100_dyn_msg~msgv1 = ''.
+            me->if_t100_dyn_msg~msgv1 = casdk_empty.
         else.
             me->if_t100_dyn_msg~msgv1 = msgv1.
         endif.
 
         if msgv2 is initial.
-            me->if_t100_dyn_msg~msgv2 = ''.
+            me->if_t100_dyn_msg~msgv2 = casdk_empty.
         else.
             me->if_t100_dyn_msg~msgv2 = msgv2.
         endif.
 
         if msgv3 is initial.
-            me->if_t100_dyn_msg~msgv3 = ''.
+            me->if_t100_dyn_msg~msgv3 = casdk_empty.
         else.
             me->if_t100_dyn_msg~msgv3 = msgv3.
         endif.
 
         if msgv4 is initial.
-            me->if_t100_dyn_msg~msgv4 = ''.
+            me->if_t100_dyn_msg~msgv4 = casdk_empty.
         else.
             me->if_t100_dyn_msg~msgv4 = msgv4.
         endif.
@@ -112,25 +112,25 @@ class casdk_cx_dynamic_exception implementation.
     method constructor ##ADT_SUPPRESS_GENERATION.
         super->constructor(  ).
         if msgv1 is initial.
-            me->if_t100_dyn_msg~msgv1 = ''.
+            me->if_t100_dyn_msg~msgv1 = casdk_empty.
         else.
             me->if_t100_dyn_msg~msgv1 = msgv1.
         endif.
 
         if msgv2 is initial.
-            me->if_t100_dyn_msg~msgv2 = ''.
+            me->if_t100_dyn_msg~msgv2 = casdk_empty.
         else.
             me->if_t100_dyn_msg~msgv2 = msgv2.
         endif.
 
         if msgv3 is initial.
-            me->if_t100_dyn_msg~msgv3 = ''.
+            me->if_t100_dyn_msg~msgv3 = casdk_empty.
         else.
             me->if_t100_dyn_msg~msgv3 = msgv3.
         endif.
 
         if msgv4 is initial.
-            me->if_t100_dyn_msg~msgv4 = ''.
+            me->if_t100_dyn_msg~msgv4 = casdk_empty.
         else.
             me->if_t100_dyn_msg~msgv4 = msgv4.
         endif.

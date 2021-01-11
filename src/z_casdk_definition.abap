@@ -72,7 +72,8 @@ types:
 
 constants:
     casdk_true  type casdk_raw_boolean value 'X',
-    casdk_false type casdk_raw_boolean value ' '.
+    casdk_false type casdk_raw_boolean value ' ',
+    casdk_empty type casdk_raw_string  value ''.
 
 
 *--------------------------------------------------------------*
@@ -80,7 +81,7 @@ constants:
 *--------------------------------------------------------------*
 
 constants:
-    casdk_confparam_line_size type casdk_raw_integer  value 200.
+    casdk_confparam_line_size type casdk_raw_integer  value 180.
 
 
 *--------------------------------------------------------------*
@@ -342,7 +343,7 @@ class casdk_cl_utils definition create private final inheriting from casdk_cl_ob
         "! @raising casdk_cx_cast_error          | Error if the object can't interpreted as string
         "! @raising casdk_cx_dynamic_exception   | Error if the object can't be printed
         class-methods print
-            importing value(obj) type any optional
+            importing value(obj) type any default casdk_empty
             raising casdk_cx_cast_error
                     casdk_cx_dynamic_exception.
 
@@ -351,7 +352,7 @@ class casdk_cl_utils definition create private final inheriting from casdk_cl_ob
         "! @raising casdk_cx_cast_error          | Error if the object can't interpreted as string
         "! @raising casdk_cx_dynamic_exception   | Error if the object can't be printed
         class-methods println
-            importing value(obj) type any optional
+            importing value(obj) type any default casdk_empty
             raising casdk_cx_cast_error
                     casdk_cx_dynamic_exception.
 
