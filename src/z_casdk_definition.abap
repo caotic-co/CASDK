@@ -70,11 +70,6 @@ types:
     casdk_raw_byte_matrix           type standard table of casdk_raw_byte_array         with default key,
     casdk_raw_byte_string_matrix    type standard table of casdk_raw_byte_string_array  with default key.
 
-
-*--------------------------------------------------------------*
-* CASDK BOOLEAN VALUES                                         *
-*--------------------------------------------------------------*
-
 constants:
     casdk_true  type casdk_raw_boolean value 'X',
     casdk_false type casdk_raw_boolean value ' '.
@@ -88,39 +83,22 @@ constants:
     casdk_confparam_line_size type casdk_raw_integer  value 200.
 
 
-
 *--------------------------------------------------------------*
 * CASDK METADATA                                               *
 *--------------------------------------------------------------*
 
-constants:
-    casdk_metadata_mayor_version  type casdk_raw_integer  value 1,
-    casdk_metadata_minor_version  type casdk_raw_integer  value 0,
-    casdk_metadata_patch_version  type casdk_raw_integer  value 0.
-
-
 "! Class containing methods about information of the CASDK
 class casdk_cl_metadata definition final create private.
     public section.
+        constants:
+            major_version  type casdk_raw_integer  value 1,
+            minor_version  type casdk_raw_integer  value 0,
+            patch_version  type casdk_raw_integer  value 0.
+
         "! Returns the current installed version of the CASDK
-        "! @parameter full_version    | Current version formatted as '{MAJOR}.{MINOR}.{PATCH}
+        "! @parameter full_version    | Current version formatted as '{MAJOR}.{MINOR}.{PATCH}'
         class-methods full_version
             returning value(full_version) type casdk_raw_string.
-
-        "! Returns the current major version as a casdk_raw_integer raw type
-        "! @parameter major_version    | Current major version int
-        class-methods major_version
-            returning value(major_version) type casdk_raw_integer.
-
-        "! Returns the current minor version as a casdk_raw_integer raw type
-        "! @parameter minor_version    | Current minor version int
-        class-methods minor_version
-            returning value(minor_version) type casdk_raw_integer.
-
-        "! Returns the current patch version as a casdk_raw_integer raw type
-        "! @parameter patch_version    | Current patch version int
-        class-methods patch_version
-            returning value(patch_version) type casdk_raw_integer.
 endclass.
 
 

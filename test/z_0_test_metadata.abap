@@ -64,7 +64,7 @@ class tests_cl_metadata implementation.
     method major_version.
         cl_aunit_assert=>assert_equals(
             exp = 1
-            act = casdk_cl_metadata=>major_version(  )
+            act = casdk_cl_metadata=>major_version
             msg = 'CASE 1: The generated major version does not match the expected one'
         ).
     endmethod.
@@ -72,7 +72,7 @@ class tests_cl_metadata implementation.
     method minor_version.
         cl_aunit_assert=>assert_equals(
             exp = 0
-            act = casdk_cl_metadata=>minor_version(  )
+            act = casdk_cl_metadata=>minor_version
             msg = 'CASE 1: The generated minor version does not match the expected one'
         ).
     endmethod.
@@ -80,7 +80,7 @@ class tests_cl_metadata implementation.
     method patch_version.
         cl_aunit_assert=>assert_equals(
             exp = 0
-            act = casdk_cl_metadata=>patch_version(  )
+            act = casdk_cl_metadata=>patch_version
             msg = 'CASE 1: The generated patch version does not match the expected one'
         ).
     endmethod.
