@@ -45,11 +45,14 @@ class tests_exceptions definition for testing duration short risk level harmless
     "! Validates the behavior of the casdk_cx_dynamic_exception class.
     methods test_cx_dynamic_exception for testing.
 
+    "! Validates the behavior of the casdk_cx_nullpointer class.
+    methods test_cx_nullpointer for testing.
+
     "! Validates the behavior of the casdk_cx_cast_error class.
     methods test_cx_cast_error for testing.
 
-    "! Validates the behavior of the casdk_cx_nullpointer class.
-    methods test_cx_nullpointer for testing.
+    "! Validates the behavior of the casdk_cx_invalid_type class.
+    methods test_cx_invalid_type for testing.
 
     "! Validates the behavior of the casdk_cx_numberformat class.
     methods test_cx_numberformat for testing.
@@ -102,6 +105,28 @@ class tests_exceptions implementation.
         endtry.
     endmethod.
 
+    method test_cx_nullpointer.
+        try.
+            new casdk_cx_nullpointer(
+                msgv1 = 'Error (Part 1).'
+                msgv2 = 'Error (Part 2).'
+                msgv3 = 'Error (Part 3).'
+                msgv4 = 'Error (Part 4).'
+            )->raise_exception(  ).
+            cl_aunit_assert=>fail( msg = 'CASE 1: No exception was raised' ).
+        catch cx_root into data(e).
+            if e is not instance of casdk_cx_nullpointer.
+                cl_aunit_assert=>fail( msg = 'CASE 1: The exception class that was raised was not of type "casdk_cx_nullpointer"' ).
+            endif.
+            data(cast_ex) = cast casdk_cx_nullpointer( e ).
+            cl_aunit_assert=>assert_equals(
+                exp = 'Error (Part 1). Error (Part 2). Error (Part 3). Error (Part 4).'
+                act = cast_ex->get_message(  )
+                msg = 'CASE 1: The excpetion message does not match the parameters given'
+            ).
+        endtry.
+    endmethod.
+
     method test_cx_cast_error.
         try.
             new casdk_cx_cast_error(
@@ -124,9 +149,9 @@ class tests_exceptions implementation.
         endtry.
     endmethod.
 
-    method test_cx_nullpointer.
+    method test_cx_invalid_type.
         try.
-            new casdk_cx_nullpointer(
+            new casdk_cx_invalid_type(
                 msgv1 = 'Error (Part 1).'
                 msgv2 = 'Error (Part 2).'
                 msgv3 = 'Error (Part 3).'
@@ -134,10 +159,10 @@ class tests_exceptions implementation.
             )->raise_exception(  ).
             cl_aunit_assert=>fail( msg = 'CASE 1: No exception was raised' ).
         catch cx_root into data(e).
-            if e is not instance of casdk_cx_nullpointer.
-                cl_aunit_assert=>fail( msg = 'CASE 1: The exception class that was raised was not of type "casdk_cx_nullpointer"' ).
+            if e is not instance of casdk_cx_invalid_type.
+                cl_aunit_assert=>fail( msg = 'CASE 1: The exception class that was raised was not of type "casdk_cx_invalid_type"' ).
             endif.
-            data(cast_ex) = cast casdk_cx_nullpointer( e ).
+            data(cast_ex) = cast casdk_cx_invalid_type( e ).
             cl_aunit_assert=>assert_equals(
                 exp = 'Error (Part 1). Error (Part 2). Error (Part 3). Error (Part 4).'
                 act = cast_ex->get_message(  )

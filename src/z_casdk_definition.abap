@@ -173,6 +173,13 @@ class casdk_cx_cast_error definition create public inheriting from casdk_cx_dyna
 endclass.
 *--------------------------------------------------------------*
 
+"! Raised when an invalid type is used
+class casdk_cx_invalid_type definition create public inheriting from casdk_cx_dynamic_exception.
+    public section.
+        methods raise_exception redefinition.
+endclass.
+*--------------------------------------------------------------*
+
 "! Raised when a string has the wrong format to be a number
 class casdk_cx_numberformat definition create public inheriting from casdk_cx_dynamic_exception.
     public section.

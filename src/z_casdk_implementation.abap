@@ -198,6 +198,23 @@ class casdk_cx_cast_error implementation.
 endclass.
 *--------------------------------------------------------------*
 
+class casdk_cx_invalid_type implementation.
+    method raise_exception.
+        raise exception type casdk_cx_invalid_type
+            message e000(error) with
+                me->if_t100_dyn_msg~msgv1
+                me->if_t100_dyn_msg~msgv2
+                me->if_t100_dyn_msg~msgv3
+                me->if_t100_dyn_msg~msgv4
+            exporting
+                msgv1 = me->if_t100_dyn_msg~msgv1
+                msgv2 = me->if_t100_dyn_msg~msgv2
+                msgv3 = me->if_t100_dyn_msg~msgv3
+                msgv4 = me->if_t100_dyn_msg~msgv4.
+    endmethod.
+endclass.
+*--------------------------------------------------------------*
+
 class casdk_cx_numberformat implementation.
     method raise_exception.
         raise exception type casdk_cx_numberformat
