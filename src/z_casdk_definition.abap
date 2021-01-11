@@ -53,22 +53,7 @@ types:
     casdk_raw_byte_string           type xstring,
     casdk_raw_date                  type d,
     casdk_raw_time                  type t,
-    casdk_raw_timestamp             type timestamp,
-    casdk_raw_message               type c length 50,
-    casdk_raw_boolean_array         type standard table of casdk_raw_boolean            with default key,
-    casdk_raw_integer_array         type standard table of casdk_raw_integer            with default key,
-    casdk_raw_float_array           type standard table of casdk_raw_float              with default key,
-    casdk_raw_long_array            type standard table of casdk_raw_long               with default key,
-    casdk_raw_string_array          type standard table of casdk_raw_string             with default key,
-    casdk_raw_byte_array            type standard table of casdk_raw_byte               with default key,
-    casdk_raw_byte_string_array     type standard table of casdk_raw_byte_string        with default key,
-    casdk_raw_boolean_matrix        type standard table of casdk_raw_boolean_array      with default key,
-    casdk_raw_integer_matrix        type standard table of casdk_raw_integer_array      with default key,
-    casdk_raw_float_matrix          type standard table of casdk_raw_float_array        with default key,
-    casdk_raw_long_matrix           type standard table of casdk_raw_long_array         with default key,
-    casdk_raw_string_matrix         type standard table of casdk_raw_string_array       with default key,
-    casdk_raw_byte_matrix           type standard table of casdk_raw_byte_array         with default key,
-    casdk_raw_byte_string_matrix    type standard table of casdk_raw_byte_string_array  with default key.
+    casdk_raw_message               type c length 50.
 
 constants:
     casdk_true  type casdk_raw_boolean value 'X',
