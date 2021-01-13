@@ -461,7 +461,7 @@ endclass.
 *--------------------------------------------------------------*
 
 "! Data structure for storing and retrieving elements of different types
-class casdk_cl_list definition inheriting from casdk_cl_object.
+class casdk_cl_list definition create private inheriting from casdk_cl_object.
     public section.
         "! Initialize the list with a given type restriction
         "! @parameter list_type              | Type of elements the list will store
@@ -484,6 +484,14 @@ class casdk_cl_list definition inheriting from casdk_cl_object.
         class-methods is_valid_type_name
             importing value(type_name) type casdk_type_name
             returning value(result) type casdk_raw_boolean.
+
+        "! Static factory that creates a list of a given type
+        "! @parameter list_type              | Type of elements the list will store
+        "! @raising casdk_cx_invalid_type    | Exception raised if the given type for the list is unsupported
+        class-methods of
+            importing value(list_type) type casdk_type_name
+            returning value(result) type ref to casdk_cl_list
+            raising casdk_cx_invalid_type.
 
     private section.
         types:

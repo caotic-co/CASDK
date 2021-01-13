@@ -957,5 +957,9 @@ class casdk_cl_list implementation.
         endif.
         result = casdk_false.
     endmethod.
+
+    method of.
+        result = new casdk_cl_list( list_type ).
+    endmethod.
 endclass.
 *--------------------------------------------------------------*
