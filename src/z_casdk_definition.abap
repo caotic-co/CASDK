@@ -38,35 +38,55 @@
 * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.       *
 *--------------------------------------------------------------*
 
+*--------------------------------------------------------------*
+* CASDK CONFIGURABLE PARAMETERS                                *
+*--------------------------------------------------------------*
+
+constants:
+    casdk_confparam_line_size     type i value 180.
+
 
 *--------------------------------------------------------------*
 * CASDK RAW TYPES                                              *
 *--------------------------------------------------------------*
+types     casdk_type_name         type string.
 
-types:
-    casdk_raw_boolean               type c length 1,
-    casdk_raw_integer               type i,
-    casdk_raw_float                 type f,
-    casdk_raw_long                  type dec20,
-    casdk_raw_string                type string,
-    casdk_raw_byte                  type x length 32000,
-    casdk_raw_byte_string           type xstring,
-    casdk_raw_date                  type d,
-    casdk_raw_time                  type t,
-    casdk_raw_message               type c length 50.
+types     casdk_raw_boolean       type c length 1.
+constants casdk_typ_boolean       type casdk_type_name value 'casdk_raw_boolean'.
+
+types     casdk_raw_integer       type i.
+constants casdk_typ_integer       type casdk_type_name value 'casdk_raw_integer'.
+
+types     casdk_raw_float         type f.
+constants casdk_typ_float         type casdk_type_name value 'casdk_raw_float'.
+
+types     casdk_raw_long          type dec20.
+constants casdk_typ_long          type casdk_type_name value 'casdk_raw_long'.
+
+types     casdk_raw_string        type string.
+constants casdk_typ_string        type casdk_type_name value 'casdk_raw_string'.
+
+types     casdk_raw_byte          type x length 32000.
+constants casdk_typ_byte          type casdk_type_name value 'casdk_raw_byte'.
+
+types     casdk_raw_byte_string   type xstring.
+constants casdk_typ_byte_string   type casdk_type_name value 'casdk_raw_byte_string'.
+
+types     casdk_raw_date          type d.
+constants casdk_typ_date          type casdk_type_name value 'casdk_raw_date'.
+
+types     casdk_raw_time          type t.
+constants casdk_typ_time          type casdk_type_name value 'casdk_raw_time'.
+
+types     casdk_raw_message       type c length 50.
+constants casdk_typ_message       type casdk_type_name value 'casdk_raw_message'.
+
+constants casdk_typ_cl_object     type casdk_type_name value 'casdk_cl_object'.
 
 constants:
     casdk_true  type casdk_raw_boolean value 'X',
     casdk_false type casdk_raw_boolean value ' ',
     casdk_empty type casdk_raw_string  value ''.
-
-
-*--------------------------------------------------------------*
-* CASDK CONFIGURATION PARAMETERS                               *
-*--------------------------------------------------------------*
-
-constants:
-    casdk_confparam_line_size type casdk_raw_integer  value 180.
 
 
 *--------------------------------------------------------------*
@@ -160,6 +180,20 @@ endclass.
 
 "! Raised when an invalid type is used
 class casdk_cx_invalid_type definition create public inheriting from casdk_cx_dynamic_exception.
+    public section.
+        methods raise_exception redefinition.
+endclass.
+*--------------------------------------------------------------*
+
+"! Raised when an overflow has presented
+class casdk_cx_overflow_error definition create public inheriting from casdk_cx_dynamic_exception.
+    public section.
+        methods raise_exception redefinition.
+endclass.
+*--------------------------------------------------------------*
+
+"! Raised when an index is bigger that the supported range
+class casdk_cx_index_out_of_bounds definition create public inheriting from casdk_cx_dynamic_exception.
     public section.
         methods raise_exception redefinition.
 endclass.
@@ -304,12 +338,72 @@ class casdk_cl_utils definition create private final inheriting from casdk_cl_ob
             importing value(obj)    type any
             returning value(result) type casdk_raw_boolean.
 
+        "! Evaluates if a given object or variable is a casdk_cl_object
+        "! @parameter obj    | Object or Variable to be evaluated
+        class-methods is_cl_object
+            importing value(obj) type any
+            returning value(result) type casdk_raw_boolean.
+
+        "! Evaluates if a given object or variable is a boolean
+        "! @parameter obj    | Object or Variable to be evaluated
+        class-methods is_boolean
+            importing value(obj) type any
+            returning value(result) type casdk_raw_boolean.
+
+        "! Evaluates if a given object or variable is an integer
+        "! @parameter obj    | Object or Variable to be evaluated
+        class-methods is_integer
+            importing value(obj) type any
+            returning value(result) type casdk_raw_boolean.
+
+        "! Evaluates if a given object or variable is a float
+        "! @parameter obj    | Object or Variable to be evaluated
+        class-methods is_float
+            importing value(obj) type any
+            returning value(result) type casdk_raw_boolean.
+
+        "! Evaluates if a given object or variable is a long
+        "! @parameter obj    | Object or Variable to be evaluated
+        class-methods is_long
+            importing value(obj) type any
+            returning value(result) type casdk_raw_boolean.
 
         "! Evaluates if a given value is a string
         "! @parameter value    | Value to be evaluated
         class-methods is_string
             importing value(value)  type any
             returning value(result) type casdk_raw_boolean.
+
+        "! Evaluates if a given object or variable is a byte
+        "! @parameter obj    | Object or Variable to be evaluated
+        class-methods is_byte
+            importing value(obj) type any
+            returning value(result) type casdk_raw_boolean.
+
+        "! Evaluates if a given object or variable is a string representation of a byte
+        "! @parameter obj    | Object or Variable to be evaluated
+        class-methods is_byte_string
+            importing value(obj) type any
+            returning value(result) type casdk_raw_boolean.
+
+        "! Evaluates if a given object or variable is a date
+        "! @parameter obj    | Object or Variable to be evaluated
+        class-methods is_date
+            importing value(obj) type any
+            returning value(result) type casdk_raw_boolean.
+
+        "! Evaluates if a given object or variable is a time
+        "! @parameter obj    | Object or Variable to be evaluated
+        class-methods is_time
+            importing value(obj) type any
+            returning value(result) type casdk_raw_boolean.
+
+        "! Evaluates if a given object or variable is a message string
+        "! @parameter obj    | Object or Variable to be evaluated
+        class-methods is_message
+            importing value(obj) type any
+            returning value(result) type casdk_raw_boolean.
+
 
         "! Evaluates if a given value is numeric
         "! @parameter value    | Value to be evaluated
@@ -363,5 +457,57 @@ class casdk_cl_utils definition create private final inheriting from casdk_cl_ob
             raising casdk_cx_dynamic_exception.
 
         class-methods reset_print_buffer.
+endclass.
+*--------------------------------------------------------------*
+
+"! Data structure for storing and retrieving elements of different types
+class casdk_cl_list definition inheriting from casdk_cl_object.
+    public section.
+        "! Initialize the list with a given type restriction
+        "! @parameter list_type              | Type of elements the list will store
+        "! @raising casdk_cx_invalid_type    | Exception raised if the given type for the list is unsupported
+        methods constructor
+            importing value(list_type) type casdk_type_name
+            raising casdk_cx_invalid_type.
+
+        "! Adds a new element to the list
+        "! @parameter element                | Element to be be added
+        "! @raising casdk_cx_invalid_type    | Exception raised if the given type for the list is unsupported
+        methods append
+            importing value(element) type any
+            raising casdk_cx_invalid_type.
+
+        methods to_string redefinition.
+
+        "! Evaluates if a given type is valid to create lists.
+        "! @parameter type_name    | Object or Variable to be evaluated
+        class-methods is_valid_type_name
+            importing value(type_name) type casdk_type_name
+            returning value(result) type casdk_raw_boolean.
+
+    private section.
+        types:
+            begin of casdk_local_typ_list_element,
+                integer_value type casdk_raw_integer,
+                float_value type casdk_raw_float,
+                long_value type casdk_raw_long,
+                string_value type casdk_raw_string,
+                byte_value type casdk_raw_byte,
+                byte_string_value type casdk_raw_byte_string,
+                date_value type casdk_raw_date,
+                time_value type casdk_raw_time,
+                obj_value type ref to casdk_cl_object,
+            end of casdk_local_typ_list_element.
+
+        types casdk_local_typ_bucket type standard table of casdk_local_typ_list_element with default key.
+        types casdk_local_typ_bucket_array type standard table of casdk_local_typ_bucket with default key.
+
+        constants bucket_limit       type casdk_raw_integer value 10. "value 2000000000. " must be an even amount that be exactly divided by 2
+        constants bucket_array_limit type casdk_raw_integer value 5. "value 1000000000. " must be the half of bucket_limit
+        constants list_max_size type casdk_raw_long value 50. "value 2000000000000000000. "must be equal to: bucket_limit * bucket_array_limit
+
+        data list_type type casdk_type_name.
+        data length type casdk_raw_long value 0.
+        data elements type casdk_local_typ_bucket_array.
 endclass.
 *--------------------------------------------------------------*

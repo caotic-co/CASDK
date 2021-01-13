@@ -215,6 +215,40 @@ class casdk_cx_invalid_type implementation.
 endclass.
 *--------------------------------------------------------------*
 
+class casdk_cx_overflow_error implementation.
+    method raise_exception.
+        raise exception type casdk_cx_overflow_error
+            message e000(error) with
+                me->if_t100_dyn_msg~msgv1
+                me->if_t100_dyn_msg~msgv2
+                me->if_t100_dyn_msg~msgv3
+                me->if_t100_dyn_msg~msgv4
+            exporting
+                msgv1 = me->if_t100_dyn_msg~msgv1
+                msgv2 = me->if_t100_dyn_msg~msgv2
+                msgv3 = me->if_t100_dyn_msg~msgv3
+                msgv4 = me->if_t100_dyn_msg~msgv4.
+    endmethod.
+endclass.
+*--------------------------------------------------------------*
+
+class casdk_cx_index_out_of_bounds implementation.
+    method raise_exception.
+        raise exception type casdk_cx_index_out_of_bounds
+            message e000(error) with
+                me->if_t100_dyn_msg~msgv1
+                me->if_t100_dyn_msg~msgv2
+                me->if_t100_dyn_msg~msgv3
+                me->if_t100_dyn_msg~msgv4
+            exporting
+                msgv1 = me->if_t100_dyn_msg~msgv1
+                msgv2 = me->if_t100_dyn_msg~msgv2
+                msgv3 = me->if_t100_dyn_msg~msgv3
+                msgv4 = me->if_t100_dyn_msg~msgv4.
+    endmethod.
+endclass.
+*--------------------------------------------------------------*
+
 class casdk_cx_numberformat implementation.
     method raise_exception.
         raise exception type casdk_cx_numberformat
@@ -449,9 +483,108 @@ class casdk_cl_utils implementation.
          result = casdk_false.
     endmethod.
 
+    method is_cl_object.
+        if casdk_cl_utils=>is_pointer( obj ) = casdk_true and
+               casdk_cl_utils=>is_null_pointer( obj ) = casdk_false and
+               obj is instance of casdk_cl_object.
+            result = casdk_true.
+            return.
+        endif.
+        result = casdk_false.
+    endmethod.
+
+    method is_boolean.
+        describe field obj type data(obj_type).
+        if obj_type = 'C' and ( obj = casdk_true or obj = casdk_false ).
+            result = casdk_true.
+            return.
+        elseif casdk_cl_utils=>is_pointer( obj ) = casdk_true and
+               casdk_cl_utils=>is_null_pointer( obj ) = casdk_false and
+               obj is instance of casdk_cl_boolean.
+            result = casdk_true.
+            return.
+        endif.
+        result = casdk_false.
+    endmethod.
+
+    method is_integer.
+        describe field obj type data(obj_type).
+        if obj_type = 'I'.
+            result = casdk_true.
+            return.
+        endif.
+        result = casdk_false.
+    endmethod.
+
+    method is_float.
+        describe field obj type data(obj_type).
+        if obj_type = 'F'.
+            result = casdk_true.
+            return.
+        endif.
+        result = casdk_false.
+    endmethod.
+
+    method is_long.
+        describe field obj type data(obj_type).
+        if obj_type = 'P'.
+            describe field obj decimals data(decimals).
+            if decimals = 0.
+                result = casdk_true.
+                return.
+            endif.
+        endif.
+        result = casdk_false.
+    endmethod.
+
     method is_string.
         describe field value type data(value_type).
         if value_type = 'C' or value_type = 'g'.
+            result = casdk_true.
+            return.
+        endif.
+        result = casdk_false.
+    endmethod.
+
+    method is_byte.
+        describe field obj type data(obj_type).
+        if obj_type = 'X'.
+            result = casdk_true.
+            return.
+        endif.
+        result = casdk_false.
+    endmethod.
+
+    method is_byte_string.
+        describe field obj type data(obj_type).
+        if obj_type = 'y'.
+            result = casdk_true.
+            return.
+        endif.
+        result = casdk_false.
+    endmethod.
+
+    method is_date.
+        describe field obj type data(obj_type).
+        if obj_type = 'D'.
+            result = casdk_true.
+            return.
+        endif.
+        result = casdk_false.
+    endmethod.
+
+    method is_time.
+        describe field obj type data(obj_type).
+        if obj_type = 'T'.
+            result = casdk_true.
+            return.
+        endif.
+        result = casdk_false.
+    endmethod.
+
+    method is_message.
+        describe field obj type data(obj_type).
+        if casdk_cl_utils=>is_string( obj ) = casdk_true and strlen( obj ) = 50.
             result = casdk_true.
             return.
         endif.
@@ -494,19 +627,24 @@ class casdk_cl_utils implementation.
         data escaped_newline_placeholder type casdk_raw_string value '{{CASDKNEWLINE}}'.
         data newline_char type casdk_raw_string value '\n'.
         data newline_abap type casdk_raw_string  value %_NEWLINE.
+        data escape_new_line type casdk_raw_boolean value casdk_true.
 
         if casdk_cl_utils=>is_string( obj ) = casdk_true.
             concatenate out obj into out respecting blanks.
         elseif casdk_cl_utils=>is_pointer( obj ) = casdk_true.
-            if obj is instance of casdk_cl_object.
-                data(cast_obj) = cast casdk_cl_object( obj ).
-                out = cast_obj->to_string(  ).
-            elseif obj is instance of casdk_cx_static_exception.
+            if obj is instance of casdk_cx_static_exception.
                 data(cast_exception) = cast casdk_cx_static_exception( obj ).
                 out = cast_exception->get_message(  ).
             elseif obj is instance of casdk_cx_dynamic_exception.
                 data(cast_runtime_exception) = cast casdk_cx_dynamic_exception( obj ).
                 out = cast_runtime_exception->get_message(  ).
+            elseif obj is instance of casdk_cl_list.
+                escape_new_line = casdk_false.
+                data(cast_list) = cast casdk_cl_list( obj ).
+                out = cast_list->to_string(  ).
+            elseif obj is instance of casdk_cl_object.
+                data(cast_obj) = cast casdk_cl_object( obj ).
+                out = cast_obj->to_string(  ).
             else.
                 new casdk_cx_cast_error(
                     msgv1 = 'The print method could not'
@@ -533,9 +671,11 @@ class casdk_cl_utils implementation.
             return.
         endif.
 
-        out = casdk_cl_utils=>replace( input_str = out text = escaped_newline new_text = escaped_newline_placeholder ).
-        out = casdk_cl_utils=>replace( input_str = out text = newline_char new_text = newline_abap ).
-        out = casdk_cl_utils=>replace( input_str = out text = escaped_newline_placeholder new_text = escaped_newline ).
+        if escape_new_line = casdk_true.
+            out = casdk_cl_utils=>replace( input_str = out text = escaped_newline new_text = escaped_newline_placeholder ).
+            out = casdk_cl_utils=>replace( input_str = out text = newline_char new_text = newline_abap ).
+            out = casdk_cl_utils=>replace( input_str = out text = escaped_newline_placeholder new_text = escaped_newline ).
+        endif.
 
         data(str_len) = strlen( out ).
         data remainder type casdk_raw_integer value 0.
@@ -594,6 +734,228 @@ class casdk_cl_utils implementation.
             data(cropped_text) = substring( val = text off = 0 len = 45 ).
             concatenate '«' cropped_text '...»' into quoted_text respecting blanks.
         endif.
+    endmethod.
+endclass.
+*--------------------------------------------------------------*
+
+class casdk_cl_list implementation.
+    method constructor.
+        super->constructor(  ).
+        if casdk_cl_list=>is_valid_type_name( list_type ) = casdk_false.
+                new casdk_cx_invalid_type(
+                    msgv1 = 'Unsupported type'
+                    msgv2 = casdk_cl_utils=>string_to_quoted_message( list_type )
+                )->raise_exception(  ).
+        endif.
+        me->list_type = list_type.
+    endmethod.
+
+
+    method append.
+        data new_element type casdk_local_typ_list_element.
+
+        case me->list_type.
+            when casdk_typ_boolean.
+                if casdk_cl_utils=>is_boolean( element ) = casdk_false.
+                    new casdk_cx_invalid_type(
+                        msgv1 = 'The only supported type'
+                        msgv2 = 'for the elements of the list is'
+                        msgv3 = casdk_cl_utils=>string_to_quoted_message( me->list_type )
+                    )->raise_exception(  ).
+                endif.
+                if casdk_cl_utils=>is_pointer( element ) = casdk_true.
+                    new_element-obj_value = element.
+                else.
+                    new_element-obj_value = casdk_cl_boolean=>value_of( element ).
+                endif.
+
+            when casdk_typ_integer.
+                if casdk_cl_utils=>is_integer( element ) = casdk_false.
+                    new casdk_cx_invalid_type(
+                        msgv1 = 'The only supported type'
+                        msgv2 = 'for the elements of the list is'
+                        msgv3 = casdk_cl_utils=>string_to_quoted_message( me->list_type )
+                    )->raise_exception(  ).
+                endif.
+                new_element-integer_value = element.
+
+            when casdk_typ_float.
+                if casdk_cl_utils=>is_float( element ) = casdk_false.
+                    new casdk_cx_invalid_type(
+                        msgv1 = 'The only supported type'
+                        msgv2 = 'for the elements of the list is'
+                        msgv3 = casdk_cl_utils=>string_to_quoted_message( me->list_type )
+                    )->raise_exception(  ).
+                endif.
+                new_element-float_value = element.
+
+            when casdk_typ_long.
+                if casdk_cl_utils=>is_long( element ) = casdk_false.
+                    new casdk_cx_invalid_type(
+                        msgv1 = 'The only supported type'
+                        msgv2 = 'for the elements of the list is'
+                        msgv3 = casdk_cl_utils=>string_to_quoted_message( me->list_type )
+                    )->raise_exception(  ).
+                endif.
+                new_element-long_value = element.
+
+            when casdk_typ_string.
+                if casdk_cl_utils=>is_string( element ) = casdk_false.
+                    new casdk_cx_invalid_type(
+                        msgv1 = 'The only supported type'
+                        msgv2 = 'for the elements of the list is'
+                        msgv3 = casdk_cl_utils=>string_to_quoted_message( me->list_type )
+                    )->raise_exception(  ).
+                endif.
+                "new_element-string_value = element.
+                concatenate new_element-string_value element into new_element-string_value respecting blanks.
+
+            when casdk_typ_byte.
+                if casdk_cl_utils=>is_byte( element ) = casdk_false.
+                    new casdk_cx_invalid_type(
+                        msgv1 = 'The only supported type'
+                        msgv2 = 'for the elements of the list is'
+                        msgv3 = casdk_cl_utils=>string_to_quoted_message( me->list_type )
+                    )->raise_exception(  ).
+                endif.
+                new_element-byte_value = element.
+
+            when casdk_typ_byte_string.
+                if casdk_cl_utils=>is_byte_string( element ) = casdk_false.
+                    new casdk_cx_invalid_type(
+                        msgv1 = 'The only supported type'
+                        msgv2 = 'for the elements of the list is'
+                        msgv3 = casdk_cl_utils=>string_to_quoted_message( me->list_type )
+                    )->raise_exception(  ).
+                endif.
+                new_element-byte_string_value = element.
+
+            when casdk_typ_date.
+                if casdk_cl_utils=>is_date( element ) = casdk_false.
+                    new casdk_cx_invalid_type(
+                        msgv1 = 'The only supported type'
+                        msgv2 = 'for the elements of the list is'
+                        msgv3 = casdk_cl_utils=>string_to_quoted_message( me->list_type )
+                    )->raise_exception(  ).
+                endif.
+                new_element-date_value = element.
+
+            when casdk_typ_time.
+                if casdk_cl_utils=>is_time( element ) = casdk_false.
+                    new casdk_cx_invalid_type(
+                        msgv1 = 'The only supported type'
+                        msgv2 = 'for the elements of the list is'
+                        msgv3 = casdk_cl_utils=>string_to_quoted_message( me->list_type )
+                    )->raise_exception(  ).
+                endif.
+                new_element-time_value = element.
+
+            when casdk_typ_cl_object.
+                if casdk_cl_utils=>is_cl_object( element ) = casdk_false.
+                    new casdk_cx_invalid_type(
+                        msgv1 = 'The only supported type'
+                        msgv2 = 'for the elements of the list is'
+                        msgv3 = casdk_cl_utils=>string_to_quoted_message( me->list_type )
+                    )->raise_exception(  ).
+                endif.
+                new_element-obj_value = element.
+
+            when others.
+                new casdk_cx_invalid_type(
+                    msgv1 = 'Unsupported type'
+                    msgv2 = casdk_cl_utils=>string_to_quoted_message( me->list_type )
+                )->raise_exception(  ).
+
+        endcase.
+
+        if me->length = me->list_max_size.
+            new casdk_cx_overflow_error( msgv1 = 'The list can not hold more elements' )->raise_exception(  ).
+        endif.
+
+        data(amount_of_buckets) = lines( me->elements ).
+        if amount_of_buckets = 0.
+            data new_bucket type casdk_local_typ_bucket.
+            append new_bucket to me->elements.
+            amount_of_buckets = 1.
+        endif.
+
+        read table me->elements into data(last_bucket) index amount_of_buckets.
+
+        if lines( last_bucket ) = me->bucket_limit.
+            data new_last_bucket type casdk_local_typ_bucket.
+            last_bucket = new_last_bucket.
+            append new_last_bucket to me->elements.
+            amount_of_buckets = amount_of_buckets + 1.
+        endif.
+
+        append new_element to last_bucket.
+        delete me->elements index amount_of_buckets.
+        append last_bucket to me->elements.
+
+        me->length = me->length + 1.
+    endmethod.
+
+    method to_string.
+        data element_num type casdk_raw_long value 0.
+        data string_value type casdk_raw_string.
+        field-symbols <element_value> type any.
+        concatenate result '[' into result respecting blanks.
+        loop at me->elements assigning field-symbol(<bucket>).
+            loop at <bucket> assigning field-symbol(<element>).
+                element_num = element_num + 1.
+                case me->list_type.
+                    when casdk_typ_boolean.
+                       string_value = <element>-obj_value->to_string(  ).
+                    when casdk_typ_integer.
+                        string_value = <element>-integer_value.
+                    when casdk_typ_float.
+                       string_value = <element>-float_value.
+                    when casdk_typ_long.
+                       string_value = <element>-long_value.
+                    when casdk_typ_string.
+                       concatenate '''' <element>-string_value '''' into string_value respecting blanks .
+                    when casdk_typ_byte.
+                       string_value = <element>-byte_value.
+                    when casdk_typ_byte_string.
+                       string_value = <element>-byte_string_value.
+                    when casdk_typ_date.
+                        string_value = <element>-date_value.
+                    when casdk_typ_time.
+                        string_value = <element>-time_value.
+                    when casdk_typ_cl_object.
+                        string_value = <element>-obj_value->to_string(  ).
+                    when others.
+                        new casdk_cx_invalid_type(
+                            msgv1 = 'Unsupported list type found'
+                            msgv2 = casdk_cl_utils=>string_to_quoted_message( me->list_type )
+                        )->raise_exception(  ).
+                endcase.
+                if element_num = me->length.
+                    concatenate result string_value into result respecting blanks.
+                else.
+                    concatenate result string_value ', ' into result respecting blanks.
+                endif.
+                string_value = ''.
+            endloop.
+        endloop.
+        concatenate result ']' into result respecting blanks.
+    endmethod.
+
+    method is_valid_type_name.
+        if type_name = casdk_typ_boolean     or
+           type_name = casdk_typ_integer     or
+           type_name = casdk_typ_float       or
+           type_name = casdk_typ_long        or
+           type_name = casdk_typ_string      or
+           type_name = casdk_typ_byte        or
+           type_name = casdk_typ_byte_string or
+           type_name = casdk_typ_date        or
+           type_name = casdk_typ_time        or
+           type_name = casdk_typ_cl_object.
+           result = casdk_true.
+           return.
+        endif.
+        result = casdk_false.
     endmethod.
 endclass.
 *--------------------------------------------------------------*
