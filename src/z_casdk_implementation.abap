@@ -898,7 +898,6 @@ class casdk_cl_list implementation.
     method to_string.
         data element_num type casdk_raw_long value 0.
         data string_value type casdk_raw_string.
-        field-symbols <element_value> type any.
         concatenate result '[' into result respecting blanks.
         loop at me->elements assigning field-symbol(<bucket>).
             loop at <bucket> assigning field-symbol(<element>).
