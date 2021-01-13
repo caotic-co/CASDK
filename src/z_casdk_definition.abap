@@ -49,6 +49,7 @@ constants:
 *--------------------------------------------------------------*
 * CASDK RAW TYPES                                              *
 *--------------------------------------------------------------*
+
 types     casdk_type_name         type string.
 
 types     casdk_raw_boolean       type c length 1.
