@@ -478,7 +478,6 @@ class casdk_cl_utils definition create private final inheriting from casdk_cl_ob
             returning value(result) type casdk_raw_string.
 
         "! Transforms a binary string representation of a number into a decimal value
-        "! result format {sign}{integer_part}{.{fraction_part} OPTIONAL}
         "! @parameter input    | Binary string representation
         class-methods binary_to_decimal
             importing value(input) type casdk_raw_string
