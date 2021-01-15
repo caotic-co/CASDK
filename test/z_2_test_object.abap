@@ -62,7 +62,7 @@ class tests_cl_object implementation.
         data obj type ref to casdk_cl_object.
         obj = new casdk_cl_object(  ).
 
-        if not ( obj->class_name(  ) cs '\CLASS=casdk_cl_object'  ).
+        if not ( obj->class_name(  ) = casdk_typ_cl_object  ).
             cl_aunit_assert=>fail(
                 msg = 'CASE 1: The class name is incorrect'
             ).
@@ -75,7 +75,7 @@ class tests_cl_object implementation.
         ).
 
         obj = new lcl_classname(  ).
-        if not ( obj->class_name(  ) cs '\CLASS=LCL_CLASSNAME'  ).
+        if not ( obj->class_name(  ) = 'LCL_CLASSNAME'  ).
             cl_aunit_assert=>fail(
                 msg = 'CASE 3: The class name is incorrect'
             ).
@@ -172,14 +172,14 @@ class tests_cl_object implementation.
     method to_string.
         data obj type ref to casdk_cl_object.
         obj = new lcl_to_string(  ).
-        if not ( obj->to_string(  ) cs '\CLASS=LCL_TO_STRING@0'  ).
+        if not ( obj->to_string(  ) = 'LCL_TO_STRING@0'  ).
             cl_aunit_assert=>fail(
                 msg = 'CASE 1: The object id does not match'
             ).
         endif.
 
         obj = new lcl_to_string(  ).
-        if not ( obj->to_string(  ) cs '\CLASS=LCL_TO_STRING@1'  ).
+        if not ( obj->to_string(  ) = 'LCL_TO_STRING@1'  ).
             cl_aunit_assert=>fail(
                 msg = 'CASE 2: The object id does not match'
             ).
