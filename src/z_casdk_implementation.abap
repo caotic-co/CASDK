@@ -105,6 +105,15 @@ class casdk_cx_static_exception implementation.
                 msgv3 = me->if_t100_dyn_msg~msgv3
                 msgv4 = me->if_t100_dyn_msg~msgv4.
     endmethod.
+
+    method string_to_quoted_cx_message.
+        if strlen( text ) <= 45.
+            concatenate '«' text '»' into quoted_text respecting blanks.
+        else.
+            data(cropped_text) = substring( val = text off = 0 len = 45 ).
+            concatenate '«' cropped_text '...»' into quoted_text respecting blanks.
+        endif.
+    endmethod.
 endclass.
 *--------------------------------------------------------------*
 
@@ -375,7 +384,7 @@ class casdk_cl_boolean implementation.
     endmethod.
 
     method value_of.
-        if casdk_cl_boolean=>is_raw_boolean( obj ) = casdk_true.
+        if casdk_cl_boolean=>is_a_valid_raw_value( obj ) = casdk_true.
             if obj = casdk_true.
                 result = casdk_cl_boolean=>true(  ).
             else.
@@ -430,7 +439,7 @@ class casdk_cl_boolean implementation.
         result = casdk_false.
     endmethod.
 
-    method is_raw_boolean.
+    method is_a_valid_raw_value.
         describe field obj type data(obj_type).
         if obj_type = 'C' and ( obj = casdk_true or obj = casdk_false ).
             result = casdk_true.
@@ -468,7 +477,7 @@ class casdk_cl_boolean implementation.
                 return.
             endif.
         endif.
-        if casdk_cl_boolean=>is_raw_boolean( obj ) and obj = me->get_value( ).
+        if casdk_cl_boolean=>is_a_valid_raw_value( obj ) and obj = me->get_value( ).
             result = casdk_true.
             return.
         endif.
@@ -496,7 +505,7 @@ class casdk_cl_integer implementation.
     endmethod.
 
     method value_of.
-        if casdk_cl_integer=>is_raw_integer( obj ) = casdk_true.
+        if casdk_cl_integer=>is_a_valid_raw_value( obj ) = casdk_true.
             result =  new casdk_cl_integer( obj ).
             return.
         endif.
@@ -512,14 +521,15 @@ class casdk_cl_integer implementation.
          new casdk_cx_cast_error( msgv1 = 'The value can not be interpreted as an integer' )->raise_exception(  ).
     endmethod.
 
-    method is_raw_integer.
-        describe field obj type data(obj_type).
-        if obj_type = 'I'.
+    method is_a_valid_raw_value.
+        try.
+            data cast type casdk_raw_integer.
+            cast = obj.
             result = casdk_true.
             return.
-        endif.
-        result = casdk_false.
-
+        catch cx_root.
+            result = casdk_false.
+        endtry.
     endmethod.
 
     method is_integer_object.
@@ -547,7 +557,7 @@ class casdk_cl_integer implementation.
                 return.
             endif.
         endif.
-        if casdk_cl_integer=>is_raw_integer( obj ) and obj = me->get_value( ).
+        if casdk_cl_integer=>is_a_valid_raw_value( obj ) and obj = me->get_value( ).
             result = casdk_true.
             return.
         endif.
@@ -558,8 +568,6 @@ class casdk_cl_integer implementation.
         result = me->attr_value.
     endmethod.
 endclass.
-*--------------------------------------------------------------*
-
 *--------------------------------------------------------------*
 
 class casdk_cl_float implementation.
@@ -574,7 +582,7 @@ class casdk_cl_float implementation.
     endmethod.
 
     method value_of.
-        if casdk_cl_float=>is_a_valid_float( obj ) = casdk_true.
+        if casdk_cl_float=>is_a_valid_raw_value( obj ) = casdk_true.
             result =  new casdk_cl_float( obj ).
             return.
         endif.
@@ -590,7 +598,7 @@ class casdk_cl_float implementation.
          new casdk_cx_cast_error( msgv1 = 'The value can not be interpreted as a float' )->raise_exception(  ).
     endmethod.
 
-    method is_a_valid_float.
+    method is_a_valid_raw_value.
         try.
             data cast type casdk_raw_float.
             cast = obj.
@@ -611,7 +619,7 @@ class casdk_cl_float implementation.
 
     method hash_code.
         data(iee754) = me->to_ieee754_single_precision(  ).
-        data(long_rep) = trunc( casdk_cl_utils=>binary_to_decimal( iee754 ) ).
+        data(long_rep) = trunc( casdk_cl_type_utils=>binary_to_decimal( iee754 ) ).
         while long_rep > 2147483647.
             data(overflow) = long_rep - 2147483647.
             long_rep = -2147483649 + overflow.
@@ -632,7 +640,7 @@ class casdk_cl_float implementation.
                 return.
             endif.
         endif.
-        if casdk_cl_float=>is_a_valid_float( obj ) and obj = me->get_value( ).
+        if casdk_cl_float=>is_a_valid_raw_value( obj ) and obj = me->get_value( ).
             result = casdk_true.
             return.
         endif.
@@ -656,7 +664,7 @@ class casdk_cl_float implementation.
         constants bias type casdk_raw_integer value 127.
         data sign type casdk_raw_string value '0'.
         data bits_available type casdk_raw_integer value mantissa_bits_size.
-        data(binary_rep) = casdk_cl_utils=>decimal_to_binary( me->get_value( ) ).
+        data(binary_rep) = casdk_cl_type_utils=>decimal_to_binary( me->get_value( ) ).
         split binary_rep at '.' into table data(parts).
         read table parts into data(integer_part) index 1.
         if integer_part(1) = '-'.
@@ -682,7 +690,7 @@ class casdk_cl_float implementation.
             data(len_fraction_part) = strlen( fraction_part ).
             mantissa = substring( val = fraction_part off = index len = len_fraction_part - index ).
         endif.
-        data(data_exponent_binary) = casdk_cl_utils=>decimal_to_binary( exponent_decimal ).
+        data(data_exponent_binary) = casdk_cl_type_utils=>decimal_to_binary( exponent_decimal ).
 
         while strlen( data_exponent_binary ) < exponent_bits_size.
             concatenate '0' data_exponent_binary into data_exponent_binary.
@@ -713,7 +721,195 @@ class casdk_cl_float implementation.
 endclass.
 *--------------------------------------------------------------*
 
-class casdk_cl_utils implementation.
+class casdk_cl_long implementation.
+    method is_a_valid_raw_value.
+        try.
+            data cast type casdk_raw_long.
+            cast = obj.
+            result = casdk_true.
+            return.
+        catch cx_root.
+            result = casdk_false.
+        endtry.
+    endmethod.
+
+    method is_long_object.
+        if casdk_cl_object=>is_object( obj ) = casdk_true and obj is instance of casdk_cl_long.
+            result = casdk_true.
+            return.
+        endif.
+        result = casdk_false.
+    endmethod.
+endclass.
+*--------------------------------------------------------------*
+
+class casdk_cl_string implementation.
+    " Public methods
+    method constructor.
+        super->constructor(  ).
+        me->attr_value = value.
+    endmethod.
+
+    method get_value.
+        result = me->attr_value.
+    endmethod.
+
+    method value_of.
+        if casdk_cl_string=>is_a_valid_raw_value( obj ) = casdk_true.
+            result =  new casdk_cl_string( obj ).
+            return.
+        endif.
+        if casdk_cl_object=>is_object( obj ) = casdk_true.
+            if obj is initial.
+                new casdk_cx_nullpointer( msgv1 = 'Initial objects can not be interpreted as strings' )->raise_exception(  ).
+            endif.
+            if casdk_cl_string=>is_string_object( obj ) = casdk_true.
+                result = cast casdk_cl_string( obj ).
+                return.
+            endif.
+         endif.
+         new casdk_cx_cast_error( msgv1 = 'The value can not be interpreted as a string' )->raise_exception(  ).
+    endmethod.
+
+    method is_a_valid_raw_value.
+        try.
+            data cast type casdk_raw_string.
+            cast = obj.
+            result = casdk_true.
+            return.
+        catch cx_root.
+            result = casdk_false.
+        endtry.
+    endmethod.
+
+    method is_string_object.
+        if casdk_cl_object=>is_object( obj ) = casdk_true and obj is instance of casdk_cl_string.
+            result = casdk_true.
+            return.
+        endif.
+        result = casdk_false.
+    endmethod.
+
+    method replace.
+        data(replaced_string) = me->get_value(  ).
+        if times < 0.
+            result = new casdk_cl_string( replaced_string ).
+            return.
+        elseif times = 0.
+            while replaced_string cs text.
+                replace text with new_text into replaced_string.
+            endwhile.
+        else.
+            data(i) = 0.
+            while replaced_string cs text and i < times.
+                    replace text with new_text into replaced_string.
+                    i = i + 1.
+            endwhile.
+        endif.
+        result = new casdk_cl_string( replaced_string ).
+    endmethod.
+
+    method hash_code.
+    endmethod.
+
+    method equals.
+    endmethod.
+
+    method to_string.
+        result = me->get_value(  ).
+    endmethod.
+endclass.
+*--------------------------------------------------------------*
+
+class casdk_cl_byte implementation.
+    method is_a_valid_raw_value.
+        try.
+            data cast type casdk_raw_byte.
+            cast = obj.
+            result = casdk_true.
+            return.
+        catch cx_root.
+            result = casdk_false.
+        endtry.
+    endmethod.
+
+    method is_byte_object.
+        if casdk_cl_object=>is_object( obj ) = casdk_true and obj is instance of casdk_cl_byte.
+            result = casdk_true.
+            return.
+        endif.
+        result = casdk_false.
+    endmethod.
+endclass.
+*--------------------------------------------------------------*
+
+class casdk_cl_byte_string implementation.
+    method is_a_valid_raw_value.
+        try.
+            data cast type casdk_raw_byte_string.
+            cast = obj.
+            result = casdk_true.
+            return.
+        catch cx_root.
+            result = casdk_false.
+        endtry.
+    endmethod.
+
+    method is_byte_string_object.
+        if casdk_cl_object=>is_object( obj ) = casdk_true and obj is instance of casdk_cl_byte_string.
+            result = casdk_true.
+            return.
+        endif.
+        result = casdk_false.
+    endmethod.
+endclass.
+*--------------------------------------------------------------*
+
+class casdk_cl_date implementation.
+    method is_a_valid_raw_value.
+        try.
+            data cast type casdk_raw_date.
+            cast = obj.
+            result = casdk_true.
+            return.
+        catch cx_root.
+            result = casdk_false.
+        endtry.
+    endmethod.
+
+    method is_date_object.
+        if casdk_cl_object=>is_object( obj ) = casdk_true and obj is instance of casdk_cl_date.
+            result = casdk_true.
+            return.
+        endif.
+        result = casdk_false.
+    endmethod.
+endclass.
+*--------------------------------------------------------------*
+
+class casdk_cl_time implementation.
+     method is_a_valid_raw_value.
+        try.
+            data cast type casdk_raw_time.
+            cast = obj.
+            result = casdk_true.
+            return.
+        catch cx_root.
+            result = casdk_false.
+        endtry.
+    endmethod.
+
+    method is_time_object.
+        if casdk_cl_object=>is_object( obj ) = casdk_true and obj is instance of casdk_cl_time.
+            result = casdk_true.
+            return.
+        endif.
+        result = casdk_false.
+    endmethod.
+endclass.
+*--------------------------------------------------------------*
+
+class casdk_cl_type_utils implementation.
     " Public Methods
     method decimal_to_binary.
         data integer_part type casdk_raw_long.
@@ -816,276 +1012,11 @@ class casdk_cl_utils implementation.
     endmethod.
 
     method is_null_pointer.
-         if casdk_cl_utils=>is_pointer( obj ) = casdk_true and obj is initial.
-            result = casdk_true.
-            return.
-         endif.
-         result = casdk_false.
-    endmethod.
-
-    method is_cl_object.
-        if casdk_cl_utils=>is_pointer( obj ) = casdk_true and
-               casdk_cl_utils=>is_null_pointer( obj ) = casdk_false and
-               obj is instance of casdk_cl_object.
+        if casdk_cl_type_utils=>is_pointer( obj ) and obj is initial.
             result = casdk_true.
             return.
         endif.
         result = casdk_false.
-    endmethod.
-
-    method is_boolean.
-        describe field obj type data(obj_type).
-        if obj_type = 'C' and ( obj = casdk_true or obj = casdk_false ).
-            result = casdk_true.
-            return.
-        elseif casdk_cl_utils=>is_pointer( obj ) = casdk_true and
-               casdk_cl_utils=>is_null_pointer( obj ) = casdk_false and
-               obj is instance of casdk_cl_boolean.
-            result = casdk_true.
-            return.
-        endif.
-        result = casdk_false.
-    endmethod.
-
-    method is_integer.
-        describe field obj type data(obj_type).
-        if obj_type = 'I'.
-            result = casdk_true.
-            return.
-        endif.
-        result = casdk_false.
-    endmethod.
-
-    method is_float.
-        describe field obj type data(obj_type).
-        if obj_type = 'F'.
-            result = casdk_true.
-            return.
-        endif.
-        result = casdk_false.
-    endmethod.
-
-    method is_long.
-        describe field obj type data(obj_type).
-        if obj_type = 'P'.
-            describe field obj decimals data(decimals).
-            if decimals = 0.
-                result = casdk_true.
-                return.
-            endif.
-        endif.
-        result = casdk_false.
-    endmethod.
-
-    method is_string.
-        describe field value type data(value_type).
-        if value_type = 'C' or value_type = 'g'.
-            result = casdk_true.
-            return.
-        endif.
-        result = casdk_false.
-    endmethod.
-
-    method is_byte.
-        describe field obj type data(obj_type).
-        if obj_type = 'X'.
-            result = casdk_true.
-            return.
-        endif.
-        result = casdk_false.
-    endmethod.
-
-    method is_byte_string.
-        describe field obj type data(obj_type).
-        if obj_type = 'y'.
-            result = casdk_true.
-            return.
-        endif.
-        result = casdk_false.
-    endmethod.
-
-    method is_date.
-        describe field obj type data(obj_type).
-        if obj_type = 'D'.
-            result = casdk_true.
-            return.
-        endif.
-        result = casdk_false.
-    endmethod.
-
-    method is_time.
-        describe field obj type data(obj_type).
-        if obj_type = 'T'.
-            result = casdk_true.
-            return.
-        endif.
-        result = casdk_false.
-    endmethod.
-
-    method is_message.
-        describe field obj type data(obj_type).
-        if casdk_cl_utils=>is_string( obj ) = casdk_true and strlen( obj ) = 50.
-            result = casdk_true.
-            return.
-        endif.
-        result = casdk_false.
-    endmethod.
-
-    method is_numeric.
-        describe field value type data(value_type).
-        if value_type = 'P' or value_type = 'I' or value_type = 'F'.
-            result = casdk_true.
-            return.
-        endif.
-        result = casdk_false.
-    endmethod.
-
-    method replace.
-        result = input_str.
-        if times < 0.
-            return.
-        elseif times = 0.
-            while result cs text.
-                replace text with new_text into result.
-            endwhile.
-        else.
-            data(i) = 0.
-            while result cs text and i < times.
-                    replace text with new_text into result.
-                    i = i + 1.
-            endwhile.
-        endif.
-    endmethod.
-
-    method print.
-        if ( casdk_cl_utils=>print_buffer ) < 0.
-            new casdk_cx_dynamic_exception( msgv1 = 'The print buffer cant have a size less than 0' )->raise_exception(  ).
-        endif.
-
-        data out type casdk_raw_string.
-        data escaped_newline type casdk_raw_string value '\\n'.
-        data escaped_newline_placeholder type casdk_raw_string value '{{CASDKNEWLINE}}'.
-        data newline_char type casdk_raw_string value '\n'.
-        data newline_abap type casdk_raw_string  value %_NEWLINE.
-        data escape_new_line type casdk_raw_boolean value casdk_true.
-
-        if casdk_cl_utils=>is_string( obj ) = casdk_true.
-            concatenate out obj into out respecting blanks.
-        elseif casdk_cl_utils=>is_pointer( obj ) = casdk_true.
-            if obj is instance of casdk_cx_static_exception.
-                data(cast_exception) = cast casdk_cx_static_exception( obj ).
-                out = cast_exception->get_message(  ).
-            elseif obj is instance of casdk_cx_dynamic_exception.
-                data(cast_runtime_exception) = cast casdk_cx_dynamic_exception( obj ).
-                out = cast_runtime_exception->get_message(  ).
-            elseif obj is instance of casdk_cl_list.
-                escape_new_line = casdk_false.
-                data(cast_list) = cast casdk_cl_list( obj ).
-                out = cast_list->to_string(  ).
-            elseif obj is instance of casdk_cl_object.
-                data(cast_obj) = cast casdk_cl_object( obj ).
-                out = cast_obj->to_string(  ).
-            else.
-                new casdk_cx_cast_error(
-                    msgv1 = 'The print method could not'
-                    msgv2 = 'interpret the object as a string'
-                )->raise_exception(  ).
-            endif.
-        else.
-            try.
-                out = obj.
-            catch cx_root.
-                new casdk_cx_cast_error(
-                    msgv1 = 'The print method could not'
-                    msgv2 = 'interpret the object as a string'
-                )->raise_exception(  ).
-            endtry.
-        endif.
-
-        if casdk_cl_utils=>is_print_line_size_set = casdk_false.
-            new-page line-size casdk_confparam_line_size.
-            casdk_cl_utils=>is_print_line_size_set = casdk_true.
-        endif.
-
-        if out is initial.
-            return.
-        endif.
-
-        if escape_new_line = casdk_true.
-            out = casdk_cl_utils=>replace( input_str = out text = escaped_newline new_text = escaped_newline_placeholder ).
-            out = casdk_cl_utils=>replace( input_str = out text = newline_char new_text = newline_abap ).
-            out = casdk_cl_utils=>replace( input_str = out text = escaped_newline_placeholder new_text = escaped_newline ).
-        endif.
-
-        data(str_len) = strlen( out ).
-        data remainder type casdk_raw_integer value 0.
-        data last_char_pos type casdk_raw_integer value 0.
-        data partial_out type casdk_raw_string.
-        data pos_newline type casdk_raw_integer.
-
-        remainder = str_len.
-        while remainder <> 0.
-            if remainder >= casdk_cl_utils=>print_buffer.
-                partial_out = substring( val = out off = last_char_pos len = casdk_cl_utils=>print_buffer ).
-                if partial_out cs newline_abap.
-                    find first occurrence of newline_abap in partial_out match offset pos_newline.
-                    partial_out = substring( val = partial_out off = 0 len = pos_newline ).
-                    write partial_out no-gap.
-                    skip.
-                    casdk_cl_utils=>reset_print_buffer(  ).
-                    remainder =  remainder - ( pos_newline + 1 ).
-                    last_char_pos = last_char_pos + pos_newline + 1.
-                    continue.
-                endif.
-                write partial_out no-gap.
-                casdk_cl_utils=>reset_print_buffer(  ).
-                last_char_pos = last_char_pos + casdk_cl_utils=>print_buffer.
-                remainder = remainder - casdk_cl_utils=>print_buffer.
-            else.
-                partial_out = substring( val = out off = last_char_pos len = remainder ).
-                if partial_out cs newline_abap.
-                    find first occurrence of newline_abap in partial_out match offset pos_newline.
-                    partial_out = substring( val = partial_out off = 0 len = pos_newline ).
-                    write partial_out no-gap.
-                    skip.
-                    casdk_cl_utils=>reset_print_buffer(  ).
-                    remainder =  remainder - ( pos_newline + 1 ).
-                    last_char_pos = last_char_pos + pos_newline + 1.
-                    continue.
-                endif.
-                write partial_out no-gap.
-                casdk_cl_utils=>reduce_print_buffer( remainder ).
-                last_char_pos = last_char_pos + remainder.
-                remainder = 0.
-            endif.
-        endwhile.
-    endmethod.
-
-    method println.
-        casdk_cl_utils=>print( obj ).
-        skip.
-        casdk_cl_utils=>reset_print_buffer(  ).
-    endmethod.
-
-    method string_to_quoted_message.
-        if strlen( text ) <= 45.
-            concatenate '«' text '»' into quoted_text respecting blanks.
-        else.
-            data(cropped_text) = substring( val = text off = 0 len = 45 ).
-            concatenate '«' cropped_text '...»' into quoted_text respecting blanks.
-        endif.
-    endmethod.
-
-    " Private Methods
-    method reduce_print_buffer.
-        if ( casdk_cl_utils=>print_buffer - amount ) < 0.
-            new casdk_cx_dynamic_exception( msgv1 = 'The print buffer cant have a size less than 0' )->raise_exception(  ).
-        endif.
-        casdk_cl_utils=>print_buffer = casdk_cl_utils=>print_buffer - amount.
-    endmethod.
-
-    method reset_print_buffer.
-        casdk_cl_utils=>print_buffer = casdk_confparam_line_size.
     endmethod.
 endclass.
 *--------------------------------------------------------------*
@@ -1096,7 +1027,7 @@ class casdk_cl_list implementation.
         if casdk_cl_list=>is_valid_type_name( list_type ) = casdk_false.
                 new casdk_cx_invalid_type(
                     msgv1 = 'Unsupported type'
-                    msgv2 = casdk_cl_utils=>string_to_quoted_message( list_type )
+                    msgv2 = casdk_cx_static_exception=>string_to_quoted_cx_message( list_type )
                 )->raise_exception(  ).
         endif.
         me->list_type = list_type.
@@ -1107,96 +1038,96 @@ class casdk_cl_list implementation.
         data new_element type casdk_local_typ_list_element.
         case me->list_type.
             when casdk_typ_boolean.
-                if casdk_cl_utils=>is_boolean( element ) = casdk_false.
+                if casdk_cl_boolean=>is_a_valid_raw_value( element ) = casdk_false.
                     new casdk_cx_invalid_type(
                         msgv1 = 'The only supported type'
                         msgv2 = 'for the elements of the list is'
-                        msgv3 = casdk_cl_utils=>string_to_quoted_message( me->list_type )
+                        msgv3 = casdk_cx_static_exception=>string_to_quoted_cx_message( me->list_type )
                     )->raise_exception(  ).
                 endif.
-                if casdk_cl_utils=>is_pointer( element ) = casdk_true.
+                if casdk_cl_type_utils=>is_pointer( element ) = casdk_true.
                     new_element-obj_value = element.
                 else.
                     new_element-obj_value = casdk_cl_boolean=>value_of( element ).
                 endif.
             when casdk_typ_integer.
-                if casdk_cl_utils=>is_integer( element ) = casdk_false.
+                if casdk_cl_integer=>is_a_valid_raw_value( element ) = casdk_false.
                     new casdk_cx_invalid_type(
                         msgv1 = 'The only supported type'
                         msgv2 = 'for the elements of the list is'
-                        msgv3 = casdk_cl_utils=>string_to_quoted_message( me->list_type )
+                        msgv3 = casdk_cx_static_exception=>string_to_quoted_cx_message( me->list_type )
                     )->raise_exception(  ).
                 endif.
                 new_element-integer_value = element.
             when casdk_typ_float.
-                if casdk_cl_utils=>is_float( element ) = casdk_false.
+                if casdk_cl_float=>is_a_valid_raw_value( element ) = casdk_false.
                     new casdk_cx_invalid_type(
                         msgv1 = 'The only supported type'
                         msgv2 = 'for the elements of the list is'
-                        msgv3 = casdk_cl_utils=>string_to_quoted_message( me->list_type )
+                        msgv3 = casdk_cx_static_exception=>string_to_quoted_cx_message( me->list_type )
                     )->raise_exception(  ).
                 endif.
                 new_element-float_value = element.
             when casdk_typ_long.
-                if casdk_cl_utils=>is_long( element ) = casdk_false.
+                if casdk_cl_long=>is_a_valid_raw_value( element ) = casdk_false.
                     new casdk_cx_invalid_type(
                         msgv1 = 'The only supported type'
                         msgv2 = 'for the elements of the list is'
-                        msgv3 = casdk_cl_utils=>string_to_quoted_message( me->list_type )
+                        msgv3 = casdk_cx_static_exception=>string_to_quoted_cx_message( me->list_type )
                     )->raise_exception(  ).
                 endif.
                 new_element-long_value = element.
             when casdk_typ_string.
-                if casdk_cl_utils=>is_string( element ) = casdk_false.
+                if casdk_cl_string=>is_a_valid_raw_value( element ) = casdk_false.
                     new casdk_cx_invalid_type(
                         msgv1 = 'The only supported type'
                         msgv2 = 'for the elements of the list is'
-                        msgv3 = casdk_cl_utils=>string_to_quoted_message( me->list_type )
+                        msgv3 = casdk_cx_static_exception=>string_to_quoted_cx_message( me->list_type )
                     )->raise_exception(  ).
                 endif.
                 concatenate casdk_empty element into new_element-string_value respecting blanks.
             when casdk_typ_byte.
-                if casdk_cl_utils=>is_byte( element ) = casdk_false.
+                if casdk_cl_byte=>is_a_valid_raw_value( element ) = casdk_false.
                     new casdk_cx_invalid_type(
                         msgv1 = 'The only supported type'
                         msgv2 = 'for the elements of the list is'
-                        msgv3 = casdk_cl_utils=>string_to_quoted_message( me->list_type )
+                        msgv3 = casdk_cx_static_exception=>string_to_quoted_cx_message( me->list_type )
                     )->raise_exception(  ).
                 endif.
                 new_element-byte_value = element.
             when casdk_typ_byte_string.
-                if casdk_cl_utils=>is_byte_string( element ) = casdk_false.
+                if casdk_cl_byte_string=>is_a_valid_raw_value( element ) = casdk_false.
                     new casdk_cx_invalid_type(
                         msgv1 = 'The only supported type'
                         msgv2 = 'for the elements of the list is'
-                        msgv3 = casdk_cl_utils=>string_to_quoted_message( me->list_type )
+                        msgv3 = casdk_cx_static_exception=>string_to_quoted_cx_message( me->list_type )
                     )->raise_exception(  ).
                 endif.
                 new_element-byte_string_value = element.
             when casdk_typ_date.
-                if casdk_cl_utils=>is_date( element ) = casdk_false.
+                if casdk_cl_date=>is_a_valid_raw_value( element ) = casdk_false.
                     new casdk_cx_invalid_type(
                         msgv1 = 'The only supported type'
                         msgv2 = 'for the elements of the list is'
-                        msgv3 = casdk_cl_utils=>string_to_quoted_message( me->list_type )
+                        msgv3 = casdk_cx_static_exception=>string_to_quoted_cx_message( me->list_type )
                     )->raise_exception(  ).
                 endif.
                 new_element-date_value = element.
             when casdk_typ_time.
-                if casdk_cl_utils=>is_time( element ) = casdk_false.
+                if casdk_cl_time=>is_a_valid_raw_value( element ) = casdk_false.
                     new casdk_cx_invalid_type(
                         msgv1 = 'The only supported type'
                         msgv2 = 'for the elements of the list is'
-                        msgv3 = casdk_cl_utils=>string_to_quoted_message( me->list_type )
+                        msgv3 = casdk_cx_static_exception=>string_to_quoted_cx_message( me->list_type )
                     )->raise_exception(  ).
                 endif.
                 new_element-time_value = element.
             when casdk_typ_cl_object.
-                if casdk_cl_utils=>is_cl_object( element ) = casdk_false.
+                if casdk_cl_object=>is_object( element ) = casdk_false.
                     new casdk_cx_invalid_type(
                         msgv1 = 'The only supported type'
                         msgv2 = 'for the elements of the list is'
-                        msgv3 = casdk_cl_utils=>string_to_quoted_message( me->list_type )
+                        msgv3 = casdk_cx_static_exception=>string_to_quoted_cx_message( me->list_type )
                     )->raise_exception(  ).
                 endif.
                 new_element-obj_value = element.
@@ -1231,7 +1162,7 @@ class casdk_cl_list implementation.
 
     method get.
         data index_as_string type casdk_raw_string.
-        data(quoted_index) = casdk_cl_utils=>string_to_quoted_message( index_as_string ).
+        data(quoted_index) = casdk_cx_static_exception=>string_to_quoted_cx_message( index_as_string ).
         index = index + 1.
 
         if index > me->length.
@@ -1346,6 +1277,134 @@ class casdk_cl_list implementation.
 
     method of.
         result = new casdk_cl_list( list_type ).
+    endmethod.
+endclass.
+*--------------------------------------------------------------*
+
+class casdk_cl_console implementation.
+    " Public Methods.
+    method print.
+        if ( casdk_cl_console=>print_buffer ) < 0.
+            new casdk_cx_dynamic_exception( msgv1 = 'The print buffer cant have a size less than 0' )->raise_exception(  ).
+        endif.
+
+        data out type casdk_raw_string.
+        data escaped_newline type casdk_raw_string value '\\n'.
+        data escaped_newline_placeholder type casdk_raw_string value '{{CASDKNEWLINE}}'.
+        data newline_char type casdk_raw_string value '\n'.
+        data newline_abap type casdk_raw_string  value %_NEWLINE.
+        data escape_new_line type casdk_raw_boolean value casdk_true.
+
+        if casdk_cl_string=>is_a_valid_raw_value( obj ) = casdk_true.
+            concatenate out obj into out respecting blanks.
+        elseif casdk_cl_type_utils=>is_pointer( obj ) = casdk_true.
+            if obj is instance of casdk_cx_static_exception.
+                data(cast_exception) = cast casdk_cx_static_exception( obj ).
+                out = cast_exception->get_message(  ).
+            elseif obj is instance of casdk_cx_dynamic_exception.
+                data(cast_runtime_exception) = cast casdk_cx_dynamic_exception( obj ).
+                out = cast_runtime_exception->get_message(  ).
+            elseif obj is instance of casdk_cl_list.
+                escape_new_line = casdk_false.
+                data(cast_list) = cast casdk_cl_list( obj ).
+                out = cast_list->to_string(  ).
+            elseif obj is instance of casdk_cl_object.
+                data(cast_obj) = cast casdk_cl_object( obj ).
+                out = cast_obj->to_string(  ).
+            else.
+                new casdk_cx_cast_error(
+                    msgv1 = 'The print method could not'
+                    msgv2 = 'interpret the object as a string'
+                )->raise_exception(  ).
+            endif.
+        else.
+            try.
+                out = obj.
+            catch cx_root.
+                new casdk_cx_cast_error(
+                    msgv1 = 'The print method could not'
+                    msgv2 = 'interpret the object as a string'
+                )->raise_exception(  ).
+            endtry.
+        endif.
+
+        if casdk_cl_console=>is_print_line_size_set = casdk_false.
+            new-page line-size casdk_cl_console=>line_size.
+            casdk_cl_console=>is_print_line_size_set = casdk_true.
+        endif.
+
+        if out is initial.
+            return.
+        endif.
+
+        if escape_new_line = casdk_true.
+            data(escaped_string) = casdk_cl_string=>value_of( out ).
+            escaped_string = escaped_string->replace( text = escaped_newline new_text = escaped_newline_placeholder ).
+            escaped_string = escaped_string->replace( text = newline_char new_text = newline_abap ).
+            escaped_string = escaped_string->replace( text = escaped_newline_placeholder new_text = escaped_newline ).
+            out = escaped_string->to_string( ).
+        endif.
+
+        data(str_len) = strlen( out ).
+        data remainder type casdk_raw_integer value 0.
+        data last_char_pos type casdk_raw_integer value 0.
+        data partial_out type casdk_raw_string.
+        data pos_newline type casdk_raw_integer.
+
+        remainder = str_len.
+        while remainder <> 0.
+            if remainder >= casdk_cl_console=>print_buffer.
+                partial_out = substring( val = out off = last_char_pos len = casdk_cl_console=>print_buffer ).
+                if partial_out cs newline_abap.
+                    find first occurrence of newline_abap in partial_out match offset pos_newline.
+                    partial_out = substring( val = partial_out off = 0 len = pos_newline ).
+                    write partial_out no-gap.
+                    skip.
+                    casdk_cl_console=>reset_print_buffer(  ).
+                    remainder =  remainder - ( pos_newline + 1 ).
+                    last_char_pos = last_char_pos + pos_newline + 1.
+                    continue.
+                endif.
+                write partial_out no-gap.
+                casdk_cl_console=>reset_print_buffer(  ).
+                last_char_pos = last_char_pos + casdk_cl_console=>print_buffer.
+                remainder = remainder - casdk_cl_console=>print_buffer.
+            else.
+                partial_out = substring( val = out off = last_char_pos len = remainder ).
+                if partial_out cs newline_abap.
+                    find first occurrence of newline_abap in partial_out match offset pos_newline.
+                    partial_out = substring( val = partial_out off = 0 len = pos_newline ).
+                    write partial_out no-gap.
+                    skip.
+                    casdk_cl_console=>reset_print_buffer(  ).
+                    remainder =  remainder - ( pos_newline + 1 ).
+                    last_char_pos = last_char_pos + pos_newline + 1.
+                    continue.
+                endif.
+                write partial_out no-gap.
+                casdk_cl_console=>reduce_print_buffer( remainder ).
+                last_char_pos = last_char_pos + remainder.
+                remainder = 0.
+            endif.
+        endwhile.
+    endmethod.
+
+    method println.
+        casdk_cl_console=>print( obj ).
+        skip.
+        casdk_cl_console=>reset_print_buffer(  ).
+    endmethod.
+
+    " Private Methods
+    method reduce_print_buffer.
+        if ( casdk_cl_console=>print_buffer - amount ) < 0.
+            new casdk_cx_dynamic_exception( msgv1 = 'The print buffer cant have a size less than 0' )->raise_exception(  ).
+        endif.
+        casdk_cl_console=>print_buffer = casdk_cl_console=>print_buffer - amount.
+    endmethod.
+
+    method reset_print_buffer.
+        casdk_cl_console=>print_buffer = casdk_cl_console=>line_size.
     endmethod.
 endclass.
 *--------------------------------------------------------------*

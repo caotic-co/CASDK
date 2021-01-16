@@ -38,13 +38,6 @@
 * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.       *
 *--------------------------------------------------------------*
 
-*--------------------------------------------------------------*
-* CASDK CONFIGURABLE PARAMETERS                                *
-*--------------------------------------------------------------*
-
-constants:
-    casdk_confparam_line_size     type i value 180.
-
 
 *--------------------------------------------------------------*
 * CASDK RAW TYPES                                              *
@@ -79,13 +72,14 @@ constants casdk_typ_date          type casdk_type_name value 'casdk_raw_date'.
 types     casdk_raw_time          type t.
 constants casdk_typ_time          type casdk_type_name value 'casdk_raw_time'.
 
-types     casdk_raw_message       type c length 50.
-constants casdk_typ_message       type casdk_type_name value 'casdk_raw_message'.
+types     casdk_raw_cx_message    type c length 50.
+constants casdk_typ_cx_message    type casdk_type_name value 'casdk_raw_cx_message'.
 
 constants:
     casdk_true  type casdk_raw_boolean value 'X',
     casdk_false type casdk_raw_boolean value ' ',
-    casdk_empty type casdk_raw_string  value ''.
+    casdk_empty type casdk_raw_string  value '',
+    casdk_space type casdk_raw_string  value ' '.
 
 
 *--------------------------------------------------------------*
@@ -126,10 +120,10 @@ class casdk_cx_static_exception definition create public inheriting from cx_stat
         "! @parameter msgv3    | Third message line of the exceptions's reason
         "! @parameter msgv4    | Fourth message line of the exceptions's reason
         methods constructor
-            importing value(msgv1) type casdk_raw_message optional
-                      value(msgv2) type casdk_raw_message optional
-                      value(msgv3) type casdk_raw_message optional
-                      value(msgv4) type casdk_raw_message optional.
+            importing value(msgv1) type casdk_raw_cx_message optional
+                      value(msgv2) type casdk_raw_cx_message optional
+                      value(msgv3) type casdk_raw_cx_message optional
+                      value(msgv4) type casdk_raw_cx_message optional.
 
         "! Returns the full message associated to the exception
         methods get_message
@@ -138,6 +132,12 @@ class casdk_cx_static_exception definition create public inheriting from cx_stat
         "! Raises a new exception with the current messages
         methods raise_exception
             raising casdk_cx_static_exception.
+
+        "! Returns a quoted representation of a string.
+        "! @parameter text    | Raw string to be quoted.
+        class-methods string_to_quoted_cx_message
+            importing value(text) type casdk_raw_string
+            returning value(quoted_text) type casdk_raw_cx_message.
 endclass.
 *--------------------------------------------------------------*
 
@@ -155,10 +155,10 @@ class casdk_cx_dynamic_exception definition create public inheriting from cx_dyn
         "! @parameter msgv3    | Third message line of the exceptions's reason
         "! @parameter msgv4    | Fourth message line of the exceptions's reason
         methods constructor
-            importing value(msgv1) type casdk_raw_message optional
-                      value(msgv2) type casdk_raw_message optional
-                      value(msgv3) type casdk_raw_message optional
-                      value(msgv4) type casdk_raw_message optional.
+            importing value(msgv1) type casdk_raw_cx_message optional
+                      value(msgv2) type casdk_raw_cx_message optional
+                      value(msgv3) type casdk_raw_cx_message optional
+                      value(msgv4) type casdk_raw_cx_message optional.
 
         "! Returns the full message associated to the exception
         methods get_message
@@ -286,7 +286,7 @@ endclass.
 
 constants casdk_typ_cl_boolean type casdk_type_name value 'CASDK_CL_BOOLEAN'.
 
-"! Immutable Boolean wrapper for raw booleans
+"! Immutable Boolean wrapper for raw boolean values
 class casdk_cl_boolean definition create private inheriting from casdk_cl_object.
     public section.
         "! Initializes the object value.
@@ -337,9 +337,9 @@ class casdk_cl_boolean definition create private inheriting from casdk_cl_object
                       value(b) type any
             returning value(result) type casdk_raw_boolean.
 
-        "! Evaluates if a given object or variable is a raw boolean
+        "! Evaluates if a given object or variable has a valid raw boolean value
         "! @parameter obj    | Object or Variable to be evaluated
-        class-methods is_raw_boolean
+        class-methods is_a_valid_raw_value
             importing value(obj) type any
             returning value(result) type casdk_raw_boolean.
 
@@ -361,9 +361,14 @@ class casdk_cl_boolean definition create private inheriting from casdk_cl_object
 endclass.
 *--------------------------------------------------------------*
 
-" Immutable Integer wrapper for raw integers
+constants casdk_typ_cl_integer type casdk_type_name value 'CASDK_CL_INTEGER'.
+
+" Immutable Integer wrapper for raw integer values
 class casdk_cl_integer definition create private inheriting from casdk_cl_object.
     public section.
+        constants max_value type casdk_raw_integer value  2147483647.
+        constants min_value type casdk_raw_integer value -2147483648.
+
         "! Initializes the object value.
         "! @parameter value    | Raw integer value to be assigned
         methods constructor
@@ -378,12 +383,14 @@ class casdk_cl_integer definition create private inheriting from casdk_cl_object
         "! @parameter obj    | Raw integer value to be assigned or casdk_cl_object to be casted
         class-methods value_of
             importing value(obj) type any
-            returning value(result) type ref to casdk_cl_integer.
+            returning value(result) type ref to casdk_cl_integer
+            raising casdk_cx_nullpointer
+                    casdk_cx_cast_error.
 
 
-        "! Evaluates if a given object or variable is a raw integer
+        "! Evaluates if a given object or variable has a valid raw integer value
         "! @parameter obj    | Object or Variable to be evaluated
-        class-methods is_raw_integer
+        class-methods is_a_valid_raw_value
             importing value(obj) type any
             returning value(result) type casdk_raw_boolean.
 
@@ -401,9 +408,14 @@ class casdk_cl_integer definition create private inheriting from casdk_cl_object
 endclass.
 *--------------------------------------------------------------*
 
-" Immutable Float wrapper for raw floats
+constants casdk_typ_cl_float type casdk_type_name value 'CASDK_CL_FLOAT'.
+
+" Immutable Float wrapper for raw float values
 class casdk_cl_float definition create private inheriting from casdk_cl_object.
     public section.
+        constants max_value type casdk_raw_float value  '99999999999999999.99999999999999'.
+        constants min_value type casdk_raw_float value '-99999999999999999.99999999999999'.
+
         "! Initializes the object value.
         "! @parameter value    | Raw float value to be assigned
         methods constructor
@@ -418,12 +430,14 @@ class casdk_cl_float definition create private inheriting from casdk_cl_object.
         "! @parameter obj    | Raw float value to be assigned or casdk_cl_object to be casted
         class-methods value_of
             importing value(obj) type any
-            returning value(result) type ref to casdk_cl_float.
+            returning value(result) type ref to casdk_cl_float
+            raising casdk_cx_nullpointer
+                    casdk_cx_cast_error.
 
 
-        "! Evaluates if a given object or variable is a valid float value
+        "! Evaluates if a given object or variable has a valid raw float value
         "! @parameter obj    | Object or Variable to be evaluated
-        class-methods is_a_valid_float
+        class-methods is_a_valid_raw_value
             importing value(obj) type any
             returning value(result) type casdk_raw_boolean.
 
@@ -445,30 +459,170 @@ class casdk_cl_float definition create private inheriting from casdk_cl_object.
 endclass.
 *--------------------------------------------------------------*
 
-" Long
+constants casdk_typ_cl_long type casdk_type_name value 'CASDK_CL_LONG'.
+
+" Immutable Long wrapper for raw long values
+class casdk_cl_long definition create private inheriting from casdk_cl_object.
+    public section.
+        constants max_value type casdk_raw_long value  '9999999999999999999999999999999'.
+        constants min_value type casdk_raw_long value '-9999999999999999999999999999999'.
+
+        "! Evaluates if a given object or variable has a valid raw long value
+        "! @parameter obj    | Object or Variable to be evaluated
+        class-methods is_a_valid_raw_value
+            importing value(obj) type any
+            returning value(result) type casdk_raw_boolean.
+
+        "! Evaluates if a given object or variable is a long object
+        "! @parameter obj    | Object or Variable to be evaluated
+        class-methods is_long_object
+            importing value(obj) type any
+            returning value(result) type casdk_raw_boolean.
+endclass.
 *--------------------------------------------------------------*
 
-" String
+constants casdk_typ_cl_string type casdk_type_name value 'CASDK_CL_STRING'.
+
+" Immutable String wrapper for raw string values
+class casdk_cl_string definition create private inheriting from casdk_cl_object.
+    public section.
+        constants max_length type casdk_raw_integer value 65535.
+
+        "! Initializes the object value.
+        "! @parameter value    | Raw string value to be assigned
+        methods constructor
+            importing value(value) type casdk_raw_string.
+
+        "! Returns the current raw string value of the object
+        methods get_value
+            returning value(result) type casdk_raw_string.
+
+        "! Factory that creates a new String object based on a raw string value
+        "! If a casdk_cl_object is given it will try to cast it.
+        "! @parameter obj    | Raw string value to be assigned or casdk_cl_object to be casted
+        class-methods value_of
+            importing value(obj) type any
+            returning value(result) type ref to casdk_cl_string
+            raising casdk_cx_nullpointer
+                    casdk_cx_cast_error.
+
+        "! Evaluates if a given object or variable has a valid raw string value
+        "! @parameter obj    | Object or Variable to be evaluated
+        class-methods is_a_valid_raw_value
+            importing value(obj) type any
+            returning value(result) type casdk_raw_boolean.
+
+        "! Evaluates if a given object or variable is a long object
+        "! @parameter obj    | Object or Variable to be evaluated
+        class-methods is_string_object
+            importing value(obj) type any
+            returning value(result) type casdk_raw_boolean.
+
+        "! Returns a new string object of replacing a text for a new one a given amount of times.
+        "! @parameter text         | Text to be replaced.
+        "! @parameter new_text     | The text that will replace the old one
+        "! @parameter times        | Number of occurrences to be replaced. By default all occurrences will be replaced
+        methods replace
+            importing value(text)       type casdk_raw_string
+                      value(new_text)   type casdk_raw_string
+                      value(times)      type casdk_raw_integer optional
+            returning value(result)     type ref to casdk_cl_string.
+
+        methods hash_code redefinition.
+        methods equals redefinition.
+        methods to_string redefinition.
+    private section.
+        data attr_value type casdk_raw_string.
+endclass.
 *--------------------------------------------------------------*
 
-" byte
+constants casdk_typ_cl_byte type casdk_type_name value 'CASDK_CL_BYTE'.
+
+" Immutable Byte wrapper for raw byte values
+class casdk_cl_byte definition create private inheriting from casdk_cl_object.
+    public section.
+        constants max_value type casdk_raw_byte value '7FFFFFFE'.
+        constants min_value type casdk_raw_byte value '00000000'.
+
+         "! Evaluates if a given object or variable has a valid raw byte value
+        "! @parameter obj    | Object or Variable to be evaluated
+        class-methods is_a_valid_raw_value
+            importing value(obj) type any
+            returning value(result) type casdk_raw_boolean.
+
+        "! Evaluates if a given object or variable is a byte object
+        "! @parameter obj    | Object or Variable to be evaluated
+        class-methods is_byte_object
+            importing value(obj) type any
+            returning value(result) type casdk_raw_boolean.
+endclass.
 *--------------------------------------------------------------*
 
-" Byte string
+constants casdk_typ_cl_byte_string type casdk_type_name value 'CASDK_CL_BYTE_STRING'.
+
+" Immutable Byte String wrapper for raw byte string values
+class casdk_cl_byte_string definition create private inheriting from casdk_cl_object.
+    public section.
+        "! Evaluates if a given object or variable has a valid raw byte string value
+        "! @parameter obj    | Object or Variable to be evaluated
+        class-methods is_a_valid_raw_value
+            importing value(obj) type any
+            returning value(result) type casdk_raw_boolean.
+
+        "! Evaluates if a given object or variable is a byte string object
+        "! @parameter obj    | Object or Variable to be evaluated
+        class-methods is_byte_string_object
+            importing value(obj) type any
+            returning value(result) type casdk_raw_boolean.
+endclass.
 *--------------------------------------------------------------*
 
-" date
+constants casdk_typ_cl_date type casdk_type_name value 'CASDK_CL_DATE'.
+
+" Immutable Date wrapper for raw date values
+class casdk_cl_date definition create private inheriting from casdk_cl_object.
+    public section.
+        constants format type casdk_raw_string value 'YYYYMMDD'.
+
+        "! Evaluates if a given object or variable has a valid raw date value
+        "! @parameter obj    | Object or Variable to be evaluated
+        class-methods is_a_valid_raw_value
+            importing value(obj) type any
+            returning value(result) type casdk_raw_boolean.
+
+        "! Evaluates if a given object or variable is a date object
+        "! @parameter obj    | Object or Variable to be evaluated
+        class-methods is_date_object
+            importing value(obj) type any
+            returning value(result) type casdk_raw_boolean.
+endclass.
 *--------------------------------------------------------------*
 
-" time
+constants casdk_typ_cl_time type casdk_type_name value 'CASDK_CL_TIME'.
+
+" Immutable Time wrapper for raw time values
+class casdk_cl_time definition create private inheriting from casdk_cl_object.
+    public section.
+        constants format type casdk_raw_string value 'HHMMSS'.
+
+        "! Evaluates if a given object or variable has a valid raw time value
+        "! @parameter obj    | Object or Variable to be evaluated
+        class-methods is_a_valid_raw_value
+            importing value(obj) type any
+            returning value(result) type casdk_raw_boolean.
+
+        "! Evaluates if a given object or variable is a time object
+        "! @parameter obj    | Object or Variable to be evaluated
+        class-methods is_time_object
+            importing value(obj) type any
+            returning value(result) type casdk_raw_boolean.
+endclass.
 *--------------------------------------------------------------*
 
+constants casdk_typ_cl_type_utils type casdk_type_name value 'CASDK_CL_TYPE_UTILS'.
 
-
-constants casdk_typ_cl_utils type casdk_type_name value 'CASDK_CL_UTILS'.
-
-"! Class with utilities and helpers for the CASDK
-class casdk_cl_utils definition create private final inheriting from casdk_cl_object.
+"! Class with type related utilities
+class casdk_cl_type_utils definition create private final inheriting from casdk_cl_object.
     public section.
         "! Transforms a decimal number into a binary string representation
         "! result format {sign}{integer_part}{.{fraction_part} OPTIONAL}
@@ -494,123 +648,6 @@ class casdk_cl_utils definition create private final inheriting from casdk_cl_ob
         class-methods is_null_pointer
             importing value(obj)    type any
             returning value(result) type casdk_raw_boolean.
-
-        "! Evaluates if a given object or variable is a casdk_cl_object
-        "! @parameter obj    | Object or Variable to be evaluated
-        class-methods is_cl_object
-            importing value(obj) type any
-            returning value(result) type casdk_raw_boolean.
-
-        "! Evaluates if a given object or variable is a boolean
-        "! @parameter obj    | Object or Variable to be evaluated
-        class-methods is_boolean
-            importing value(obj) type any
-            returning value(result) type casdk_raw_boolean.
-
-        "! Evaluates if a given object or variable is an integer
-        "! @parameter obj    | Object or Variable to be evaluated
-        class-methods is_integer
-            importing value(obj) type any
-            returning value(result) type casdk_raw_boolean.
-
-        "! Evaluates if a given object or variable is a float
-        "! @parameter obj    | Object or Variable to be evaluated
-        class-methods is_float
-            importing value(obj) type any
-            returning value(result) type casdk_raw_boolean.
-
-        "! Evaluates if a given object or variable is a long
-        "! @parameter obj    | Object or Variable to be evaluated
-        class-methods is_long
-            importing value(obj) type any
-            returning value(result) type casdk_raw_boolean.
-
-        "! Evaluates if a given value is a string
-        "! @parameter value    | Value to be evaluated
-        class-methods is_string
-            importing value(value)  type any
-            returning value(result) type casdk_raw_boolean.
-
-        "! Evaluates if a given object or variable is a byte
-        "! @parameter obj    | Object or Variable to be evaluated
-        class-methods is_byte
-            importing value(obj) type any
-            returning value(result) type casdk_raw_boolean.
-
-        "! Evaluates if a given object or variable is a string representation of a byte
-        "! @parameter obj    | Object or Variable to be evaluated
-        class-methods is_byte_string
-            importing value(obj) type any
-            returning value(result) type casdk_raw_boolean.
-
-        "! Evaluates if a given object or variable is a date
-        "! @parameter obj    | Object or Variable to be evaluated
-        class-methods is_date
-            importing value(obj) type any
-            returning value(result) type casdk_raw_boolean.
-
-        "! Evaluates if a given object or variable is a time
-        "! @parameter obj    | Object or Variable to be evaluated
-        class-methods is_time
-            importing value(obj) type any
-            returning value(result) type casdk_raw_boolean.
-
-        "! Evaluates if a given object or variable is a message string
-        "! @parameter obj    | Object or Variable to be evaluated
-        class-methods is_message
-            importing value(obj) type any
-            returning value(result) type casdk_raw_boolean.
-
-
-        "! Evaluates if a given value is numeric
-        "! @parameter value    | Value to be evaluated
-        class-methods is_numeric
-            importing value(value)  type any
-            returning value(result) type casdk_raw_boolean.
-
-        "! Returns a new string after replacing  a text for a new one a given amount of times in an input string.
-        "! @parameter input_str    | String where the text is going to be replaced
-        "! @parameter text         | Text to be replaced.
-        "! @parameter new_text     | The text that will replace the old one
-        "! @parameter times        | Number of occurrences to be replaced. By default all occurrences will be replaced
-        class-methods replace
-            importing value(input_str)  type casdk_raw_string
-                      value(text)       type casdk_raw_string
-                      value(new_text)   type casdk_raw_string
-                      value(times)      type casdk_raw_integer optional
-            returning value(result)     type casdk_raw_string.
-
-        "! Print to console a given object or variable
-        "! @parameter obj    | Object or Variable to be printed
-        class-methods print
-            importing value(obj) type any default casdk_empty
-            raising casdk_cx_cast_error
-                    casdk_cx_dynamic_exception.
-
-        "! Print to console a given object or variable and adds a new line at the end
-        "! @parameter obj    | Object or Variable to be printed
-        class-methods println
-            importing value(obj) type any default casdk_empty
-            raising casdk_cx_cast_error
-                    casdk_cx_dynamic_exception.
-
-        "! Returns a quoted representation message of a string.
-        "! @parameter text    | Raw string to be quoted.
-        class-methods string_to_quoted_message
-            importing value(text) type casdk_raw_string
-            returning value(quoted_text) type casdk_raw_message.
-
-    private section.
-        class-data is_print_line_size_set type casdk_raw_boolean value casdk_false.
-        class-data print_buffer type casdk_raw_integer value casdk_confparam_line_size.
-
-        "! Reduces the amount of characters available in the current report line.
-        class-methods reduce_print_buffer
-            importing value(amount) type casdk_raw_integer
-            raising casdk_cx_dynamic_exception.
-
-        "! Resets the amount of characters available to the value of the configurable parameter casdk_confparam_line_size
-        class-methods reset_print_buffer.
 endclass.
 *--------------------------------------------------------------*
 
@@ -677,5 +714,40 @@ class casdk_cl_list definition create private inheriting from casdk_cl_object.
         data list_type type casdk_type_name.
         data length type casdk_raw_long value 0.
         data elements type casdk_local_typ_bucket_array.
+endclass.
+*--------------------------------------------------------------*
+
+constants casdk_typ_cl_console type casdk_type_name value 'CASDK_CL_CONSOLE'.
+
+"! Class with console utilities and helpers
+class casdk_cl_console definition create private final inheriting from casdk_cl_object.
+    public section.
+        constants line_size     type i value 180.
+
+        "! Print to console a given object or variable
+        "! @parameter obj    | Object or Variable to be printed
+        class-methods print
+            importing value(obj) type any default casdk_empty
+            raising casdk_cx_cast_error
+                    casdk_cx_dynamic_exception.
+
+        "! Print to console a given object or variable and adds a new line at the end
+        "! @parameter obj    | Object or Variable to be printed
+        class-methods println
+            importing value(obj) type any default casdk_empty
+            raising casdk_cx_cast_error
+                    casdk_cx_dynamic_exception.
+
+    private section.
+        class-data is_print_line_size_set type casdk_raw_boolean value casdk_false.
+        class-data print_buffer type casdk_raw_integer value line_size.
+
+        "! Reduces the amount of characters available in the current report line.
+        class-methods reduce_print_buffer
+            importing value(amount) type casdk_raw_integer
+            raising casdk_cx_dynamic_exception.
+
+        "! Resets the amount of characters available to the value casdk_cl_console=>line_size
+        class-methods reset_print_buffer.
 endclass.
 *--------------------------------------------------------------*
