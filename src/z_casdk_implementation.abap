@@ -297,6 +297,7 @@ endclass.
 *--------------------------------------------------------------*
 
 class casdk_cl_object implementation.
+    " Public Instance Methods
     method constructor.
         " Assign the hash code for new objects
         data current_class_info type class_info.
@@ -348,6 +349,7 @@ class casdk_cl_object implementation.
         condense result no-gaps.
     endmethod.
 
+    " Public Static Methods
     method is_object.
         describe field obj type data(obj_type).
         if obj_type = 'r' and obj is instance of casdk_cl_object.
@@ -360,6 +362,7 @@ endclass.
 *--------------------------------------------------------------*
 
 class casdk_cl_boolean implementation.
+    " Public Instance Methods
     method constructor.
         super->constructor(  ).
         me->attr_value = bool.
@@ -367,6 +370,60 @@ class casdk_cl_boolean implementation.
 
     method get_value.
          result = me->attr_value.
+    endmethod.
+
+    method hash_code.
+        if me->get_value(  ) = casdk_true.
+            result = 1231.
+        else.
+            result = 1237.
+        endif.
+    endmethod.
+
+    method equals.
+        describe field obj type data(obj_type).
+        if casdk_cl_object=>is_object( obj ) and obj is initial.
+            result = casdk_false.
+            return.
+        endif.
+        if casdk_cl_boolean=>is_boolean_object( obj ) = casdk_true.
+            data(obj_cast) = cast casdk_cl_boolean( obj ).
+            if obj_cast->get_value(  ) = me->get_value( ).
+                result = casdk_true.
+                return.
+            endif.
+        endif.
+        if casdk_cl_boolean=>is_a_valid_raw_value( obj ) and obj = me->get_value( ).
+            result = casdk_true.
+            return.
+        endif.
+        result = casdk_false.
+    endmethod.
+
+    method to_string.
+        if me->get_value(  ) = casdk_true.
+            result = 'true'.
+        else.
+            result = 'false'.
+        endif.
+    endmethod.
+
+    " Public Static Methods
+    method is_a_valid_raw_value.
+        describe field obj type data(obj_type).
+        if obj_type = 'C' and ( obj = casdk_true or obj = casdk_false ).
+            result = casdk_true.
+            return.
+        endif.
+        result = casdk_false.
+    endmethod.
+
+    method is_boolean_object.
+        if casdk_cl_object=>is_object( obj ) = casdk_true and obj is instance of casdk_cl_boolean.
+            result = casdk_true.
+            return.
+        endif.
+        result = casdk_false.
     endmethod.
 
     method true.
@@ -438,63 +495,11 @@ class casdk_cl_boolean implementation.
         endif.
         result = casdk_false.
     endmethod.
-
-    method is_a_valid_raw_value.
-        describe field obj type data(obj_type).
-        if obj_type = 'C' and ( obj = casdk_true or obj = casdk_false ).
-            result = casdk_true.
-            return.
-        endif.
-        result = casdk_false.
-    endmethod.
-
-    method is_boolean_object.
-        if casdk_cl_object=>is_object( obj ) = casdk_true and obj is instance of casdk_cl_boolean.
-            result = casdk_true.
-            return.
-        endif.
-        result = casdk_false.
-    endmethod.
-
-    method hash_code.
-        if me->get_value(  ) = casdk_true.
-            result = 1231.
-        else.
-            result = 1237.
-        endif.
-    endmethod.
-
-    method equals.
-        describe field obj type data(obj_type).
-        if casdk_cl_object=>is_object( obj ) and obj is initial.
-            result = casdk_false.
-            return.
-        endif.
-        if casdk_cl_boolean=>is_boolean_object( obj ) = casdk_true.
-            data(obj_cast) = cast casdk_cl_boolean( obj ).
-            if obj_cast->get_value(  ) = me->get_value( ).
-                result = casdk_true.
-                return.
-            endif.
-        endif.
-        if casdk_cl_boolean=>is_a_valid_raw_value( obj ) and obj = me->get_value( ).
-            result = casdk_true.
-            return.
-        endif.
-        result = casdk_false.
-    endmethod.
-
-    method to_string.
-        if me->get_value(  ) = casdk_true.
-            result = 'true'.
-        else.
-            result = 'false'.
-        endif.
-    endmethod.
 endclass.
 *--------------------------------------------------------------*
 
 class casdk_cl_integer implementation.
+    " Public Instance Methods
     method constructor.
         super->constructor(  ).
         me->attr_value = value.
@@ -502,42 +507,6 @@ class casdk_cl_integer implementation.
 
     method get_value.
         result = me->attr_value.
-    endmethod.
-
-    method value_of.
-        if casdk_cl_integer=>is_a_valid_raw_value( obj ) = casdk_true.
-            result =  new casdk_cl_integer( obj ).
-            return.
-        endif.
-        if casdk_cl_object=>is_object( obj ) = casdk_true.
-            if obj is initial.
-                new casdk_cx_nullpointer( msgv1 = 'Initial objects can not be interpreted as integers' )->raise_exception(  ).
-            endif.
-            if casdk_cl_integer=>is_integer_object( obj ) = casdk_true.
-                result = cast casdk_cl_integer( obj ).
-                return.
-            endif.
-         endif.
-         new casdk_cx_cast_error( msgv1 = 'The value can not be interpreted as an integer' )->raise_exception(  ).
-    endmethod.
-
-    method is_a_valid_raw_value.
-        try.
-            data cast type casdk_raw_integer.
-            cast = obj.
-            result = casdk_true.
-            return.
-        catch cx_root.
-            result = casdk_false.
-        endtry.
-    endmethod.
-
-    method is_integer_object.
-        if casdk_cl_object=>is_object( obj ) = casdk_true and obj is instance of casdk_cl_integer.
-            result = casdk_true.
-            return.
-        endif.
-        result = casdk_false.
     endmethod.
 
     method hash_code.
@@ -567,11 +536,55 @@ class casdk_cl_integer implementation.
     method to_string.
         result = me->attr_value.
     endmethod.
+
+    " Public Static Methods
+    method is_a_valid_raw_value.
+        describe field obj type data(obj_type).
+        if obj_type = 'I'.
+            result = casdk_true.
+            return.
+        elseif obj_type = 'P' or obj_type = 'F'.
+            constants min type casdk_raw_long value casdk_cl_integer=>min_value.
+            constants max type casdk_raw_long value casdk_cl_integer=>max_value.
+            data obj_as_long type casdk_raw_long.
+            obj_as_long = obj.
+            if min <= obj_as_long and obj_as_long <= max.
+                result = casdk_true.
+                return.
+            endif.
+        endif.
+        result = casdk_false.
+    endmethod.
+
+    method is_integer_object.
+        if casdk_cl_object=>is_object( obj ) = casdk_true and obj is instance of casdk_cl_integer.
+            result = casdk_true.
+            return.
+        endif.
+        result = casdk_false.
+    endmethod.
+
+    method value_of.
+        if casdk_cl_integer=>is_a_valid_raw_value( obj ) = casdk_true.
+            result =  new casdk_cl_integer( obj ).
+            return.
+        endif.
+        if casdk_cl_object=>is_object( obj ) = casdk_true.
+            if obj is initial.
+                new casdk_cx_nullpointer( msgv1 = 'Initial objects can not be interpreted as integers' )->raise_exception(  ).
+            endif.
+            if casdk_cl_integer=>is_integer_object( obj ) = casdk_true.
+                result = cast casdk_cl_integer( obj ).
+                return.
+            endif.
+         endif.
+         new casdk_cx_cast_error( msgv1 = 'The value can not be interpreted as an integer' )->raise_exception(  ).
+    endmethod.
 endclass.
 *--------------------------------------------------------------*
 
 class casdk_cl_float implementation.
-    " Public methods
+    " Public Instance Methods
     method constructor.
         super->constructor(  ).
         me->attr_value = value.
@@ -581,43 +594,7 @@ class casdk_cl_float implementation.
         result = me->attr_value.
     endmethod.
 
-    method value_of.
-        if casdk_cl_float=>is_a_valid_raw_value( obj ) = casdk_true.
-            result =  new casdk_cl_float( obj ).
-            return.
-        endif.
-        if casdk_cl_object=>is_object( obj ) = casdk_true.
-            if obj is initial.
-                new casdk_cx_nullpointer( msgv1 = 'Initial objects can not be interpreted as floats' )->raise_exception(  ).
-            endif.
-            if casdk_cl_float=>is_float_object( obj ) = casdk_true.
-                result = cast casdk_cl_float( obj ).
-                return.
-            endif.
-         endif.
-         new casdk_cx_cast_error( msgv1 = 'The value can not be interpreted as a float' )->raise_exception(  ).
-    endmethod.
-
-    method is_a_valid_raw_value.
-        try.
-            data cast type casdk_raw_float.
-            cast = obj.
-            result = casdk_true.
-            return.
-        catch cx_root.
-            result = casdk_false.
-        endtry.
-    endmethod.
-
-    method is_float_object.
-        if casdk_cl_object=>is_object( obj ) = casdk_true and obj is instance of casdk_cl_float.
-            result = casdk_true.
-            return.
-        endif.
-        result = casdk_false.
-    endmethod.
-
-    method hash_code.
+     method hash_code.
         data(iee754) = me->to_ieee754_single_precision(  ).
         data(long_rep) = trunc( casdk_cl_type_utils=>binary_to_decimal( iee754 ) ).
         while long_rep > 2147483647.
@@ -651,13 +628,57 @@ class casdk_cl_float implementation.
         result = me->attr_value.
     endmethod.
 
-    " Private methods
+
+    " Public Static Methods
+    method is_a_valid_raw_value.
+        describe field obj type data(obj_type).
+        if obj_type = 'I' or obj_type = 'F'.
+            result = casdk_true.
+            return.
+        elseif obj_type = 'P'.
+            constants min type casdk_raw_long value casdk_cl_float=>min_value.
+            constants max type casdk_raw_long value casdk_cl_float=>max_value.
+            data obj_as_long type casdk_raw_long.
+            obj_as_long = obj.
+            if min <= obj_as_long and obj_as_long <= max.
+                result = casdk_true.
+                return.
+            endif.
+        endif.
+        result = casdk_false.
+    endmethod.
+
+    method is_float_object.
+        if casdk_cl_object=>is_object( obj ) = casdk_true and obj is instance of casdk_cl_float.
+            result = casdk_true.
+            return.
+        endif.
+        result = casdk_false.
+    endmethod.
+
+    method value_of.
+        if casdk_cl_float=>is_a_valid_raw_value( obj ) = casdk_true.
+            result =  new casdk_cl_float( obj ).
+            return.
+        endif.
+        if casdk_cl_object=>is_object( obj ) = casdk_true.
+            if obj is initial.
+                new casdk_cx_nullpointer( msgv1 = 'Initial objects can not be interpreted as floats' )->raise_exception(  ).
+            endif.
+            if casdk_cl_float=>is_float_object( obj ) = casdk_true.
+                result = cast casdk_cl_float( obj ).
+                return.
+            endif.
+         endif.
+         new casdk_cx_cast_error( msgv1 = 'The value can not be interpreted as a float' )->raise_exception(  ).
+    endmethod.
+
+    " Private Instance methods
     method to_ieee754_single_precision.
         if me->get_value( ) = 0.
             result = '00000000000000000000000000000000'.
             return.
         endif.
-
         constants sign_bits_size type casdk_raw_integer value 1.
         constants exponent_bits_size type casdk_raw_integer value 8.
         constants mantissa_bits_size type casdk_raw_integer value 23.
@@ -675,7 +696,6 @@ class casdk_cl_float implementation.
         if lines( parts ) > 1.
             read table parts into data(fraction_part) index 2.
         endif.
-
         data exponent_decimal type casdk_raw_float value 0.
         data mantissa type casdk_raw_string.
         if integer_part > 1.
@@ -691,12 +711,10 @@ class casdk_cl_float implementation.
             mantissa = substring( val = fraction_part off = index len = len_fraction_part - index ).
         endif.
         data(data_exponent_binary) = casdk_cl_type_utils=>decimal_to_binary( exponent_decimal ).
-
         while strlen( data_exponent_binary ) < exponent_bits_size.
             concatenate '0' data_exponent_binary into data_exponent_binary.
             condense data_exponent_binary no-gaps.
         endwhile.
-
         data(size_mantissa) = strlen( mantissa ).
         if size_mantissa > mantissa_bits_size.
             data(last_bit) = substring( val = mantissa off = mantissa_bits_size len = 1 ).
@@ -709,12 +727,10 @@ class casdk_cl_float implementation.
                 mantissa = substring( val = mantissa off = 0 len = mantissa_bits_size ).
             endif.
         endif.
-
         while strlen( mantissa ) < mantissa_bits_size.
             concatenate mantissa '0' into mantissa.
             condense mantissa no-gaps.
         endwhile.
-
         concatenate sign data_exponent_binary mantissa into result.
         condense result no-gaps.
     endmethod.
@@ -722,29 +738,7 @@ endclass.
 *--------------------------------------------------------------*
 
 class casdk_cl_long implementation.
-    method is_a_valid_raw_value.
-        try.
-            data cast type casdk_raw_long.
-            cast = obj.
-            result = casdk_true.
-            return.
-        catch cx_root.
-            result = casdk_false.
-        endtry.
-    endmethod.
-
-    method is_long_object.
-        if casdk_cl_object=>is_object( obj ) = casdk_true and obj is instance of casdk_cl_long.
-            result = casdk_true.
-            return.
-        endif.
-        result = casdk_false.
-    endmethod.
-endclass.
-*--------------------------------------------------------------*
-
-class casdk_cl_string implementation.
-    " Public methods
+    " Public Instance Methods
     method constructor.
         super->constructor(  ).
         me->attr_value = value.
@@ -754,40 +748,47 @@ class casdk_cl_string implementation.
         result = me->attr_value.
     endmethod.
 
-    method value_of.
-        if casdk_cl_string=>is_a_valid_raw_value( obj ) = casdk_true.
-            result =  new casdk_cl_string( obj ).
-            return.
-        endif.
-        if casdk_cl_object=>is_object( obj ) = casdk_true.
-            if obj is initial.
-                new casdk_cx_nullpointer( msgv1 = 'Initial objects can not be interpreted as strings' )->raise_exception(  ).
-            endif.
-            if casdk_cl_string=>is_string_object( obj ) = casdk_true.
-                result = cast casdk_cl_string( obj ).
-                return.
-            endif.
-         endif.
-         new casdk_cx_cast_error( msgv1 = 'The value can not be interpreted as a string' )->raise_exception(  ).
+    method hash_code.
     endmethod.
 
+    method equals.
+    endmethod.
+
+    method to_string.
+    endmethod.
+
+    " Public Static Methods
     method is_a_valid_raw_value.
-        try.
-            data cast type casdk_raw_string.
-            cast = obj.
-            result = casdk_true.
-            return.
-        catch cx_root.
-            result = casdk_false.
-        endtry.
-    endmethod.
-
-    method is_string_object.
-        if casdk_cl_object=>is_object( obj ) = casdk_true and obj is instance of casdk_cl_string.
+        describe field obj type data(obj_type).
+        if obj_type = 'I' or obj_type = 'F' or obj_type = 'P'.
             result = casdk_true.
             return.
         endif.
         result = casdk_false.
+    endmethod.
+
+    method is_long_object.
+        if casdk_cl_object=>is_object( obj ) = casdk_true and obj is instance of casdk_cl_long.
+            result = casdk_true.
+            return.
+        endif.
+        result = casdk_false.
+    endmethod.
+
+    method value_of.
+    endmethod.
+endclass.
+*--------------------------------------------------------------*
+
+class casdk_cl_string implementation.
+    " Public Instance Methods
+    method constructor.
+        super->constructor(  ).
+        me->attr_value = value.
+    endmethod.
+
+    method get_value.
+        result = me->attr_value.
     endmethod.
 
     method replace.
@@ -818,10 +819,46 @@ class casdk_cl_string implementation.
     method to_string.
         result = me->get_value(  ).
     endmethod.
+
+    " Public Static Methods
+    method is_a_valid_raw_value.
+        describe field obj type data(obj_type).
+        if obj_type = 'C' or obj_type = 'g'.
+            result = casdk_true.
+            return.
+        endif.
+        result = casdk_false.
+    endmethod.
+
+    method is_string_object.
+        if casdk_cl_object=>is_object( obj ) = casdk_true and obj is instance of casdk_cl_string.
+            result = casdk_true.
+            return.
+        endif.
+        result = casdk_false.
+    endmethod.
+
+    method value_of.
+        if casdk_cl_string=>is_a_valid_raw_value( obj ) = casdk_true.
+            result =  new casdk_cl_string( obj ).
+            return.
+        endif.
+        if casdk_cl_object=>is_object( obj ) = casdk_true.
+            if obj is initial.
+                new casdk_cx_nullpointer( msgv1 = 'Initial objects can not be interpreted as strings' )->raise_exception(  ).
+            endif.
+            if casdk_cl_string=>is_string_object( obj ) = casdk_true.
+                result = cast casdk_cl_string( obj ).
+                return.
+            endif.
+         endif.
+         new casdk_cx_cast_error( msgv1 = 'The value can not be interpreted as a string' )->raise_exception(  ).
+    endmethod.
 endclass.
 *--------------------------------------------------------------*
 
 class casdk_cl_byte implementation.
+    " Public Static Methods
     method is_a_valid_raw_value.
         try.
             data cast type casdk_raw_byte.
@@ -844,6 +881,7 @@ endclass.
 *--------------------------------------------------------------*
 
 class casdk_cl_byte_string implementation.
+    " Public Static Methods
     method is_a_valid_raw_value.
         try.
             data cast type casdk_raw_byte_string.
@@ -866,6 +904,7 @@ endclass.
 *--------------------------------------------------------------*
 
 class casdk_cl_date implementation.
+    " Public Static Methods
     method is_a_valid_raw_value.
         try.
             data cast type casdk_raw_date.
@@ -888,7 +927,8 @@ endclass.
 *--------------------------------------------------------------*
 
 class casdk_cl_time implementation.
-     method is_a_valid_raw_value.
+    " Public Static Methods
+    method is_a_valid_raw_value.
         try.
             data cast type casdk_raw_time.
             cast = obj.
@@ -910,7 +950,7 @@ endclass.
 *--------------------------------------------------------------*
 
 class casdk_cl_type_utils implementation.
-    " Public Methods
+    " Public Static Methods
     method decimal_to_binary.
         data integer_part type casdk_raw_long.
         data fraction_part type casdk_raw_float.
@@ -1004,11 +1044,11 @@ class casdk_cl_type_utils implementation.
 
     method is_pointer.
         describe field obj type data(obj_type).
-         if obj_type = 'r'.
+        if obj_type = 'r'.
             result = casdk_true.
             return.
-         endif.
-         result = casdk_false.
+        endif.
+        result = casdk_false.
     endmethod.
 
     method is_null_pointer.
@@ -1282,7 +1322,7 @@ endclass.
 *--------------------------------------------------------------*
 
 class casdk_cl_console implementation.
-    " Public Methods.
+    " Public Static Methods
     method print.
         if ( casdk_cl_console=>print_buffer ) < 0.
             new casdk_cx_dynamic_exception( msgv1 = 'The print buffer cant have a size less than 0' )->raise_exception(  ).
@@ -1395,7 +1435,7 @@ class casdk_cl_console implementation.
         casdk_cl_console=>reset_print_buffer(  ).
     endmethod.
 
-    " Private Methods
+    " Private Static Methods
     method reduce_print_buffer.
         if ( casdk_cl_console=>print_buffer - amount ) < 0.
             new casdk_cx_dynamic_exception( msgv1 = 'The print buffer cant have a size less than 0' )->raise_exception(  ).

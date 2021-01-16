@@ -298,6 +298,22 @@ class casdk_cl_boolean definition create private inheriting from casdk_cl_object
         methods get_value
             returning value(result) type casdk_raw_boolean.
 
+        methods hash_code redefinition.
+        methods equals redefinition.
+        methods to_string redefinition.
+
+        "! Evaluates if a given object or variable has a valid raw boolean value
+        "! @parameter obj    | Object or Variable to be evaluated
+        class-methods is_a_valid_raw_value
+            importing value(obj) type any
+            returning value(result) type casdk_raw_boolean.
+
+        "! Evaluates if a given object or variable is a boolean object
+        "! @parameter obj    | Object or Variable to be evaluated
+        class-methods is_boolean_object
+            importing value(obj) type any
+            returning value(result) type casdk_raw_boolean.
+
         "! Factory that creates a new Boolean object with a true value
         class-methods true
             returning value(result) type ref to casdk_cl_boolean.
@@ -337,22 +353,6 @@ class casdk_cl_boolean definition create private inheriting from casdk_cl_object
                       value(b) type any
             returning value(result) type casdk_raw_boolean.
 
-        "! Evaluates if a given object or variable has a valid raw boolean value
-        "! @parameter obj    | Object or Variable to be evaluated
-        class-methods is_a_valid_raw_value
-            importing value(obj) type any
-            returning value(result) type casdk_raw_boolean.
-
-        "! Evaluates if a given object or variable is a boolean object
-        "! @parameter obj    | Object or Variable to be evaluated
-        class-methods is_boolean_object
-            importing value(obj) type any
-            returning value(result) type casdk_raw_boolean.
-
-        methods hash_code redefinition.
-        methods equals redefinition.
-        methods to_string redefinition.
-
     private section.
         data attr_value type casdk_raw_boolean value casdk_false.
         class-data attr_true type ref to casdk_cl_boolean.
@@ -378,15 +378,9 @@ class casdk_cl_integer definition create private inheriting from casdk_cl_object
         methods get_value
             returning value(result) type casdk_raw_integer.
 
-        "! Factory that creates a new Integer object based on a raw integer value
-        "! If a casdk_cl_object is given it will try to cast it.
-        "! @parameter obj    | Raw integer value to be assigned or casdk_cl_object to be casted
-        class-methods value_of
-            importing value(obj) type any
-            returning value(result) type ref to casdk_cl_integer
-            raising casdk_cx_nullpointer
-                    casdk_cx_cast_error.
-
+        methods hash_code redefinition.
+        methods equals redefinition.
+        methods to_string redefinition.
 
         "! Evaluates if a given object or variable has a valid raw integer value
         "! @parameter obj    | Object or Variable to be evaluated
@@ -400,9 +394,15 @@ class casdk_cl_integer definition create private inheriting from casdk_cl_object
             importing value(obj) type any
             returning value(result) type casdk_raw_boolean.
 
-        methods hash_code redefinition.
-        methods equals redefinition.
-        methods to_string redefinition.
+        "! Factory that creates a new Integer object based on a raw integer value
+        "! If a casdk_cl_object is given it will try to cast it.
+        "! @parameter obj    | Raw integer value to be assigned or casdk_cl_object to be casted
+        class-methods value_of
+            importing value(obj) type any
+            returning value(result) type ref to casdk_cl_integer
+            raising casdk_cx_nullpointer
+                    casdk_cx_cast_error.
+
     private section.
         data attr_value type casdk_raw_integer.
 endclass.
@@ -425,15 +425,9 @@ class casdk_cl_float definition create private inheriting from casdk_cl_object.
         methods get_value
             returning value(result) type casdk_raw_float.
 
-        "! Factory that creates a new Float object based on a raw float value
-        "! If a casdk_cl_object is given it will try to cast it.
-        "! @parameter obj    | Raw float value to be assigned or casdk_cl_object to be casted
-        class-methods value_of
-            importing value(obj) type any
-            returning value(result) type ref to casdk_cl_float
-            raising casdk_cx_nullpointer
-                    casdk_cx_cast_error.
-
+        methods hash_code redefinition.
+        methods equals redefinition.
+        methods to_string redefinition.
 
         "! Evaluates if a given object or variable has a valid raw float value
         "! @parameter obj    | Object or Variable to be evaluated
@@ -447,9 +441,15 @@ class casdk_cl_float definition create private inheriting from casdk_cl_object.
             importing value(obj) type any
             returning value(result) type casdk_raw_boolean.
 
-        methods hash_code redefinition.
-        methods equals redefinition.
-        methods to_string redefinition.
+        "! Factory that creates a new Float object based on a raw float value
+        "! If a casdk_cl_object is given it will try to cast it.
+        "! @parameter obj    | Raw float value to be assigned or casdk_cl_object to be casted
+        class-methods value_of
+            importing value(obj) type any
+            returning value(result) type ref to casdk_cl_float
+            raising casdk_cx_nullpointer
+                    casdk_cx_cast_error.
+
     private section.
         data attr_value type casdk_raw_float.
 
@@ -467,6 +467,19 @@ class casdk_cl_long definition create private inheriting from casdk_cl_object.
         constants max_value type casdk_raw_long value  '9999999999999999999999999999999'.
         constants min_value type casdk_raw_long value '-9999999999999999999999999999999'.
 
+        "! Initializes the object value.
+        "! @parameter value    | Raw long value to be assigned
+        methods constructor
+            importing value(value) type casdk_raw_long.
+
+        "! Returns the current raw long value of the object
+        methods get_value
+            returning value(result) type casdk_raw_long.
+
+        methods hash_code redefinition.
+        methods equals redefinition.
+        methods to_string redefinition.
+
         "! Evaluates if a given object or variable has a valid raw long value
         "! @parameter obj    | Object or Variable to be evaluated
         class-methods is_a_valid_raw_value
@@ -478,6 +491,18 @@ class casdk_cl_long definition create private inheriting from casdk_cl_object.
         class-methods is_long_object
             importing value(obj) type any
             returning value(result) type casdk_raw_boolean.
+
+        "! Factory that creates a new Long object based on a raw long value
+        "! If a casdk_cl_object is given it will try to cast it.
+        "! @parameter obj    | Raw long value to be assigned or casdk_cl_object to be casted
+        class-methods value_of
+            importing value(obj) type any
+            returning value(result) type ref to casdk_cl_long
+            raising casdk_cx_nullpointer
+                    casdk_cx_cast_error.
+
+    private section.
+        data attr_value type casdk_raw_long.
 endclass.
 *--------------------------------------------------------------*
 
@@ -497,27 +522,6 @@ class casdk_cl_string definition create private inheriting from casdk_cl_object.
         methods get_value
             returning value(result) type casdk_raw_string.
 
-        "! Factory that creates a new String object based on a raw string value
-        "! If a casdk_cl_object is given it will try to cast it.
-        "! @parameter obj    | Raw string value to be assigned or casdk_cl_object to be casted
-        class-methods value_of
-            importing value(obj) type any
-            returning value(result) type ref to casdk_cl_string
-            raising casdk_cx_nullpointer
-                    casdk_cx_cast_error.
-
-        "! Evaluates if a given object or variable has a valid raw string value
-        "! @parameter obj    | Object or Variable to be evaluated
-        class-methods is_a_valid_raw_value
-            importing value(obj) type any
-            returning value(result) type casdk_raw_boolean.
-
-        "! Evaluates if a given object or variable is a long object
-        "! @parameter obj    | Object or Variable to be evaluated
-        class-methods is_string_object
-            importing value(obj) type any
-            returning value(result) type casdk_raw_boolean.
-
         "! Returns a new string object of replacing a text for a new one a given amount of times.
         "! @parameter text         | Text to be replaced.
         "! @parameter new_text     | The text that will replace the old one
@@ -531,6 +535,28 @@ class casdk_cl_string definition create private inheriting from casdk_cl_object.
         methods hash_code redefinition.
         methods equals redefinition.
         methods to_string redefinition.
+
+        "! Evaluates if a given object or variable has a valid raw string value
+        "! @parameter obj    | Object or Variable to be evaluated
+        class-methods is_a_valid_raw_value
+            importing value(obj) type any
+            returning value(result) type casdk_raw_boolean.
+
+        "! Evaluates if a given object or variable is a long object
+        "! @parameter obj    | Object or Variable to be evaluated
+        class-methods is_string_object
+            importing value(obj) type any
+            returning value(result) type casdk_raw_boolean.
+
+        "! Factory that creates a new String object based on a raw string value
+        "! If a casdk_cl_object is given it will try to cast it.
+        "! @parameter obj    | Raw string value to be assigned or casdk_cl_object to be casted
+        class-methods value_of
+            importing value(obj) type any
+            returning value(result) type ref to casdk_cl_string
+            raising casdk_cx_nullpointer
+                    casdk_cx_cast_error.
+
     private section.
         data attr_value type casdk_raw_string.
 endclass.
@@ -544,7 +570,7 @@ class casdk_cl_byte definition create private inheriting from casdk_cl_object.
         constants max_value type casdk_raw_byte value '7FFFFFFE'.
         constants min_value type casdk_raw_byte value '00000000'.
 
-         "! Evaluates if a given object or variable has a valid raw byte value
+        "! Evaluates if a given object or variable has a valid raw byte value
         "! @parameter obj    | Object or Variable to be evaluated
         class-methods is_a_valid_raw_value
             importing value(obj) type any
