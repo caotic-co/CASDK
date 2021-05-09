@@ -53,7 +53,7 @@ endclass.
 * EXCEPTIONS                                                   *
 *--------------------------------------------------------------*
 
-class casdk_cx_static_exception implementation.
+class casdk_cx_exception implementation.
     method constructor ##ADT_SUPPRESS_GENERATION.
         super->constructor(  ).
         if msgv1 is initial.
@@ -93,7 +93,7 @@ class casdk_cx_static_exception implementation.
     endmethod.
 
     method raise_exception.
-        raise exception type casdk_cx_static_exception
+        raise exception type casdk_cx_exception
             message e000(error) with
                 me->if_t100_dyn_msg~msgv1
                 me->if_t100_dyn_msg~msgv2
@@ -117,7 +117,7 @@ class casdk_cx_static_exception implementation.
 endclass.
 *--------------------------------------------------------------*
 
-class casdk_cx_dynamic_exception implementation.
+class casdk_cx_runtime_exception implementation.
     method constructor ##ADT_SUPPRESS_GENERATION.
         super->constructor(  ).
         if msgv1 is initial.
@@ -157,7 +157,7 @@ class casdk_cx_dynamic_exception implementation.
     endmethod.
 
     method raise_exception.
-        raise exception type casdk_cx_dynamic_exception
+        raise exception type casdk_cx_runtime_exception
             message e000(error) with
                 me->if_t100_dyn_msg~msgv1
                 me->if_t100_dyn_msg~msgv2
@@ -490,6 +490,118 @@ class casdk_cl_boolean implementation.
 
     method logical_or.
         if ( logical_not( a ) = casdk_false ) or ( logical_not( b ) = casdk_false ).
+            result = casdk_true.
+            return.
+        endif.
+        result = casdk_false.
+    endmethod.
+endclass.
+*--------------------------------------------------------------*
+
+class casdk_cl_type_utils implementation.
+    " Public Static Methods
+    method decimal_to_binary.
+        data integer_part type casdk_raw_long.
+        data fraction_part type casdk_raw_float.
+        data integer_operation_result type casdk_raw_long.
+        data fraction_operation_result type casdk_raw_float.
+        data binary_bit type casdk_raw_string.
+        constants fraction_precision type casdk_raw_integer value 24.
+        integer_part = trunc( abs( input ) ).
+        fraction_part = frac( abs( input ) ).
+        if integer_part = 0.
+            result = '0'.
+        else.
+            binary_bit = integer_part mod 2.
+            integer_operation_result = integer_part div 2.
+            concatenate binary_bit result into result.
+            while integer_operation_result > 0.
+                binary_bit = integer_operation_result mod 2.
+                integer_operation_result = integer_operation_result div 2.
+                concatenate binary_bit result into result.
+            endwhile.
+        endif.
+        if fraction_part > 0.
+            concatenate result '.' into result.
+            fraction_operation_result = fraction_part * 2.
+            if fraction_operation_result > 1.
+                fraction_operation_result =  frac( fraction_operation_result ).
+                binary_bit = 1.
+            else.
+                binary_bit = 0.
+            endif.
+            concatenate result binary_bit into result.
+            data(count) = 0.
+            while fraction_operation_result > 0 and count < fraction_precision.
+                fraction_operation_result = fraction_operation_result * 2.
+                if fraction_operation_result > 1.
+                    fraction_operation_result =  frac( fraction_operation_result ).
+                    binary_bit = 1.
+                else.
+                    binary_bit = 0.
+                endif.
+                concatenate result binary_bit into result.
+                count = count + 1.
+            endwhile.
+        endif.
+        if input < 0.
+            concatenate '-' result into result.
+        endif.
+
+        "Regex: ^(?P<sign>-?)(?P<integer_part>\d+)(?P<fraction_part>\.\d+)?$
+        condense result no-gaps.
+    endmethod.
+
+    method binary_to_decimal.
+        data sign type casdk_raw_integer value 1.
+        split input at '.' into table data(parts).
+        read table parts into data(integer_part) index 1.
+        if integer_part(1) = '-'.
+            split integer_part at '-' into table data(integer_parts).
+            read table integer_parts into integer_part index 2.
+            sign = -1.
+        endif.
+        if lines( parts ) > 1.
+            read table parts into data(fraction_part) index 2.
+        endif.
+        data(i) = 0.
+        data(integer_part_length) = strlen( integer_part  ).
+        while i < integer_part_length.
+            data(integer_bit) =  integer_part+i(1).
+            if integer_bit <> 1 and integer_bit <> 0.
+                new casdk_cx_cast_error(
+                    msgv1 = 'The binary representation contains'
+                    msgv2 = 'an invalid character that is not "1" or "0"' )->raise_exception(  ).
+            endif.
+            i = i + 1.
+            result = result + ( integer_bit * ( 2 ** ( integer_part_length - i ) ) ).
+        endwhile.
+        data(j) = 0.
+        data(fraction_part_length) = strlen( fraction_part  ).
+        while j < fraction_part_length.
+            data(fraction_bit) =  fraction_part+j(1).
+            if fraction_bit <> 1 and fraction_bit <> 0.
+                new casdk_cx_cast_error(
+                    msgv1 = 'The binary representation contains'
+                    msgv2 = 'an invalid character that is not "1" or "0"' )->raise_exception(  ).
+            endif.
+            j = j + 1.
+            result = result + ( fraction_bit * ( 2 ** ( - j ) ) ).
+        endwhile.
+        result = sign * result.
+    endmethod.
+
+    method is_pointer.
+        describe field obj type data(obj_type).
+        if obj_type = 'r'.
+            result = casdk_true.
+            return.
+        endif.
+        result = casdk_false.
+    endmethod.
+
+    method is_null_pointer.
+        if casdk_cl_type_utils=>is_pointer( obj ) and obj is initial.
             result = casdk_true.
             return.
         endif.
@@ -949,125 +1061,13 @@ class casdk_cl_time implementation.
 endclass.
 *--------------------------------------------------------------*
 
-class casdk_cl_type_utils implementation.
-    " Public Static Methods
-    method decimal_to_binary.
-        data integer_part type casdk_raw_long.
-        data fraction_part type casdk_raw_float.
-        data integer_operation_result type casdk_raw_long.
-        data fraction_operation_result type casdk_raw_float.
-        data binary_bit type casdk_raw_string.
-        constants fraction_precision type casdk_raw_integer value 24.
-        integer_part = trunc( abs( input ) ).
-        fraction_part = frac( abs( input ) ).
-        if integer_part = 0.
-            result = '0'.
-        else.
-            binary_bit = integer_part mod 2.
-            integer_operation_result = integer_part div 2.
-            concatenate binary_bit result into result.
-            while integer_operation_result > 0.
-                binary_bit = integer_operation_result mod 2.
-                integer_operation_result = integer_operation_result div 2.
-                concatenate binary_bit result into result.
-            endwhile.
-        endif.
-        if fraction_part > 0.
-            concatenate result '.' into result.
-            fraction_operation_result = fraction_part * 2.
-            if fraction_operation_result > 1.
-                fraction_operation_result =  frac( fraction_operation_result ).
-                binary_bit = 1.
-            else.
-                binary_bit = 0.
-            endif.
-            concatenate result binary_bit into result.
-            data(count) = 0.
-            while fraction_operation_result > 0 and count < fraction_precision.
-                fraction_operation_result = fraction_operation_result * 2.
-                if fraction_operation_result > 1.
-                    fraction_operation_result =  frac( fraction_operation_result ).
-                    binary_bit = 1.
-                else.
-                    binary_bit = 0.
-                endif.
-                concatenate result binary_bit into result.
-                count = count + 1.
-            endwhile.
-        endif.
-        if input < 0.
-            concatenate '-' result into result.
-        endif.
-
-        "Regex: ^(?P<sign>-?)(?P<integer_part>\d+)(?P<fraction_part>\.\d+)?$
-        condense result no-gaps.
-    endmethod.
-
-    method binary_to_decimal.
-        data sign type casdk_raw_integer value 1.
-        split input at '.' into table data(parts).
-        read table parts into data(integer_part) index 1.
-        if integer_part(1) = '-'.
-            split integer_part at '-' into table data(integer_parts).
-            read table integer_parts into integer_part index 2.
-            sign = -1.
-        endif.
-        if lines( parts ) > 1.
-            read table parts into data(fraction_part) index 2.
-        endif.
-        data(i) = 0.
-        data(integer_part_length) = strlen( integer_part  ).
-        while i < integer_part_length.
-            data(integer_bit) =  integer_part+i(1).
-            if integer_bit <> 1 and integer_bit <> 0.
-                new casdk_cx_cast_error(
-                    msgv1 = 'The binary representation contains'
-                    msgv2 = 'an invalid character that is not "1" or "0"' )->raise_exception(  ).
-            endif.
-            i = i + 1.
-            result = result + ( integer_bit * ( 2 ** ( integer_part_length - i ) ) ).
-        endwhile.
-        data(j) = 0.
-        data(fraction_part_length) = strlen( fraction_part  ).
-        while j < fraction_part_length.
-            data(fraction_bit) =  fraction_part+j(1).
-            if fraction_bit <> 1 and fraction_bit <> 0.
-                new casdk_cx_cast_error(
-                    msgv1 = 'The binary representation contains'
-                    msgv2 = 'an invalid character that is not "1" or "0"' )->raise_exception(  ).
-            endif.
-            j = j + 1.
-            result = result + ( fraction_bit * ( 2 ** ( - j ) ) ).
-        endwhile.
-        result = sign * result.
-    endmethod.
-
-    method is_pointer.
-        describe field obj type data(obj_type).
-        if obj_type = 'r'.
-            result = casdk_true.
-            return.
-        endif.
-        result = casdk_false.
-    endmethod.
-
-    method is_null_pointer.
-        if casdk_cl_type_utils=>is_pointer( obj ) and obj is initial.
-            result = casdk_true.
-            return.
-        endif.
-        result = casdk_false.
-    endmethod.
-endclass.
-*--------------------------------------------------------------*
-
 class casdk_cl_list implementation.
     method constructor.
         super->constructor(  ).
         if casdk_cl_list=>is_valid_type_name( list_type ) = casdk_false.
                 new casdk_cx_invalid_type(
                     msgv1 = 'Unsupported type'
-                    msgv2 = casdk_cx_static_exception=>string_to_quoted_cx_message( list_type )
+                    msgv2 = casdk_cx_exception=>string_to_quoted_cx_message( list_type )
                 )->raise_exception(  ).
         endif.
         me->list_type = list_type.
@@ -1082,7 +1082,7 @@ class casdk_cl_list implementation.
                     new casdk_cx_invalid_type(
                         msgv1 = 'The only supported type'
                         msgv2 = 'for the elements of the list is'
-                        msgv3 = casdk_cx_static_exception=>string_to_quoted_cx_message( me->list_type )
+                        msgv3 = casdk_cx_exception=>string_to_quoted_cx_message( me->list_type )
                     )->raise_exception(  ).
                 endif.
                 if casdk_cl_type_utils=>is_pointer( element ) = casdk_true.
@@ -1095,7 +1095,7 @@ class casdk_cl_list implementation.
                     new casdk_cx_invalid_type(
                         msgv1 = 'The only supported type'
                         msgv2 = 'for the elements of the list is'
-                        msgv3 = casdk_cx_static_exception=>string_to_quoted_cx_message( me->list_type )
+                        msgv3 = casdk_cx_exception=>string_to_quoted_cx_message( me->list_type )
                     )->raise_exception(  ).
                 endif.
                 new_element-integer_value = element.
@@ -1104,7 +1104,7 @@ class casdk_cl_list implementation.
                     new casdk_cx_invalid_type(
                         msgv1 = 'The only supported type'
                         msgv2 = 'for the elements of the list is'
-                        msgv3 = casdk_cx_static_exception=>string_to_quoted_cx_message( me->list_type )
+                        msgv3 = casdk_cx_exception=>string_to_quoted_cx_message( me->list_type )
                     )->raise_exception(  ).
                 endif.
                 new_element-float_value = element.
@@ -1113,7 +1113,7 @@ class casdk_cl_list implementation.
                     new casdk_cx_invalid_type(
                         msgv1 = 'The only supported type'
                         msgv2 = 'for the elements of the list is'
-                        msgv3 = casdk_cx_static_exception=>string_to_quoted_cx_message( me->list_type )
+                        msgv3 = casdk_cx_exception=>string_to_quoted_cx_message( me->list_type )
                     )->raise_exception(  ).
                 endif.
                 new_element-long_value = element.
@@ -1122,7 +1122,7 @@ class casdk_cl_list implementation.
                     new casdk_cx_invalid_type(
                         msgv1 = 'The only supported type'
                         msgv2 = 'for the elements of the list is'
-                        msgv3 = casdk_cx_static_exception=>string_to_quoted_cx_message( me->list_type )
+                        msgv3 = casdk_cx_exception=>string_to_quoted_cx_message( me->list_type )
                     )->raise_exception(  ).
                 endif.
                 concatenate casdk_empty element into new_element-string_value respecting blanks.
@@ -1131,7 +1131,7 @@ class casdk_cl_list implementation.
                     new casdk_cx_invalid_type(
                         msgv1 = 'The only supported type'
                         msgv2 = 'for the elements of the list is'
-                        msgv3 = casdk_cx_static_exception=>string_to_quoted_cx_message( me->list_type )
+                        msgv3 = casdk_cx_exception=>string_to_quoted_cx_message( me->list_type )
                     )->raise_exception(  ).
                 endif.
                 new_element-byte_value = element.
@@ -1140,7 +1140,7 @@ class casdk_cl_list implementation.
                     new casdk_cx_invalid_type(
                         msgv1 = 'The only supported type'
                         msgv2 = 'for the elements of the list is'
-                        msgv3 = casdk_cx_static_exception=>string_to_quoted_cx_message( me->list_type )
+                        msgv3 = casdk_cx_exception=>string_to_quoted_cx_message( me->list_type )
                     )->raise_exception(  ).
                 endif.
                 new_element-byte_string_value = element.
@@ -1149,7 +1149,7 @@ class casdk_cl_list implementation.
                     new casdk_cx_invalid_type(
                         msgv1 = 'The only supported type'
                         msgv2 = 'for the elements of the list is'
-                        msgv3 = casdk_cx_static_exception=>string_to_quoted_cx_message( me->list_type )
+                        msgv3 = casdk_cx_exception=>string_to_quoted_cx_message( me->list_type )
                     )->raise_exception(  ).
                 endif.
                 new_element-date_value = element.
@@ -1158,19 +1158,10 @@ class casdk_cl_list implementation.
                     new casdk_cx_invalid_type(
                         msgv1 = 'The only supported type'
                         msgv2 = 'for the elements of the list is'
-                        msgv3 = casdk_cx_static_exception=>string_to_quoted_cx_message( me->list_type )
+                        msgv3 = casdk_cx_exception=>string_to_quoted_cx_message( me->list_type )
                     )->raise_exception(  ).
                 endif.
                 new_element-time_value = element.
-            when casdk_typ_cl_object.
-                if casdk_cl_object=>is_object( element ) = casdk_false.
-                    new casdk_cx_invalid_type(
-                        msgv1 = 'The only supported type'
-                        msgv2 = 'for the elements of the list is'
-                        msgv3 = casdk_cx_static_exception=>string_to_quoted_cx_message( me->list_type )
-                    )->raise_exception(  ).
-                endif.
-                new_element-obj_value = element.
         endcase.
 
         if me->length = me->list_max_size.
@@ -1202,7 +1193,7 @@ class casdk_cl_list implementation.
 
     method get.
         data index_as_string type casdk_raw_string.
-        data(quoted_index) = casdk_cx_static_exception=>string_to_quoted_cx_message( index_as_string ).
+        data(quoted_index) = casdk_cx_exception=>string_to_quoted_cx_message( index_as_string ).
         index = index + 1.
 
         if index > me->length.
@@ -1245,9 +1236,6 @@ class casdk_cl_list implementation.
                             when casdk_typ_time.
                                 data(time_value) = <element>-time_value.
                                 get reference of time_value into element.
-                            when casdk_typ_cl_object.
-                                string_value = <element>-obj_value->to_string(  ).
-                                get reference of string_value into element.
                         endcase.
                         return.
                     endif.
@@ -1284,8 +1272,6 @@ class casdk_cl_list implementation.
                         string_value = <element>-date_value.
                     when casdk_typ_time.
                         string_value = <element>-time_value.
-                    when casdk_typ_cl_object.
-                        string_value = <element>-obj_value->to_string(  ).
                 endcase.
                 if element_num = me->length.
                     concatenate result string_value into result respecting blanks.
@@ -1307,8 +1293,7 @@ class casdk_cl_list implementation.
            type_name = casdk_typ_byte        or
            type_name = casdk_typ_byte_string or
            type_name = casdk_typ_date        or
-           type_name = casdk_typ_time        or
-           type_name = casdk_typ_cl_object.
+           type_name = casdk_typ_time.
            result = casdk_true.
            return.
         endif.
@@ -1325,7 +1310,7 @@ class casdk_cl_console implementation.
     " Public Static Methods
     method print.
         if ( casdk_cl_console=>print_buffer ) < 0.
-            new casdk_cx_dynamic_exception( msgv1 = 'The print buffer cant have a size less than 0' )->raise_exception(  ).
+            new casdk_cx_runtime_exception( msgv1 = 'The print buffer cant have a size less than 0' )->raise_exception(  ).
         endif.
 
         data out type casdk_raw_string.
@@ -1338,11 +1323,11 @@ class casdk_cl_console implementation.
         if casdk_cl_string=>is_a_valid_raw_value( obj ) = casdk_true.
             concatenate out obj into out respecting blanks.
         elseif casdk_cl_type_utils=>is_pointer( obj ) = casdk_true.
-            if obj is instance of casdk_cx_static_exception.
-                data(cast_exception) = cast casdk_cx_static_exception( obj ).
+            if obj is instance of casdk_cx_exception.
+                data(cast_exception) = cast casdk_cx_exception( obj ).
                 out = cast_exception->get_message(  ).
-            elseif obj is instance of casdk_cx_dynamic_exception.
-                data(cast_runtime_exception) = cast casdk_cx_dynamic_exception( obj ).
+            elseif obj is instance of casdk_cx_runtime_exception.
+                data(cast_runtime_exception) = cast casdk_cx_runtime_exception( obj ).
                 out = cast_runtime_exception->get_message(  ).
             elseif obj is instance of casdk_cl_list.
                 escape_new_line = casdk_false.
@@ -1438,7 +1423,7 @@ class casdk_cl_console implementation.
     " Private Static Methods
     method reduce_print_buffer.
         if ( casdk_cl_console=>print_buffer - amount ) < 0.
-            new casdk_cx_dynamic_exception( msgv1 = 'The print buffer cant have a size less than 0' )->raise_exception(  ).
+            new casdk_cx_runtime_exception( msgv1 = 'The print buffer cant have a size less than 0' )->raise_exception(  ).
         endif.
         casdk_cl_console=>print_buffer = casdk_cl_console=>print_buffer - amount.
     endmethod.

@@ -86,8 +86,6 @@ constants:
 * CASDK METADATA                                               *
 *--------------------------------------------------------------*
 
-constants casdk_typ_cl_metadata type casdk_type_name value 'CASDK_CL_METADATA'.
-
 "! Class containing methods about information of the CASDK
 class casdk_cl_metadata definition final create private.
     public section.
@@ -107,10 +105,8 @@ endclass.
 * EXCEPTIONS                                                   *
 *--------------------------------------------------------------*
 
-constants casdk_typ_cx_static_exception type casdk_type_name value 'CASDK_CX_STATIC_EXCEPTION'.
-
 "! Base exception for all CASDK static exceptions
-class casdk_cx_static_exception definition create public inheriting from cx_static_check.
+class casdk_cx_exception definition create public inheriting from cx_static_check.
     public section.
         interfaces if_t100_dyn_msg.
 
@@ -131,7 +127,7 @@ class casdk_cx_static_exception definition create public inheriting from cx_stat
 
         "! Raises a new exception with the current messages
         methods raise_exception
-            raising casdk_cx_static_exception.
+            raising casdk_cx_exception.
 
         "! Returns a quoted representation of a string.
         "! @parameter text    | Raw string to be quoted.
@@ -141,12 +137,9 @@ class casdk_cx_static_exception definition create public inheriting from cx_stat
 endclass.
 *--------------------------------------------------------------*
 
-constants casdk_typ_cx_dynamic_exception type casdk_type_name value 'CASDK_CX_DYNAMIC_EXCEPTION'.
-
 "! Base exception for all CASDK dynamic exceptions
-class casdk_cx_dynamic_exception definition create public inheriting from cx_dynamic_check.
+class casdk_cx_runtime_exception definition create public inheriting from cx_dynamic_check.
     public section.
-        constants class type casdk_raw_string value 'CASDK_CX_DYNAMIC_EXCEPTION'.
         interfaces if_t100_dyn_msg.
 
         "! Initializes the exception
@@ -166,68 +159,54 @@ class casdk_cx_dynamic_exception definition create public inheriting from cx_dyn
 
         "! Raises a new exception with the current messages
         methods raise_exception
-            raising casdk_cx_dynamic_exception.
+            raising casdk_cx_runtime_exception.
 endclass.
 *--------------------------------------------------------------*
-
-constants casdk_typ_cx_nullpointer type casdk_type_name value 'CASDK_CX_NULLPOINTER'.
 
 "! Raised when the reference to an object is not initialized
-class casdk_cx_nullpointer definition create public inheriting from casdk_cx_dynamic_exception.
+class casdk_cx_nullpointer definition create public inheriting from casdk_cx_runtime_exception.
     public section.
         methods raise_exception redefinition.
 endclass.
 *--------------------------------------------------------------*
-
-constants casdk_typ_cx_cast_error type casdk_type_name value 'CASDK_CX_CAST_ERROR'.
 
 "! Raised when a cast fails to be performed
-class casdk_cx_cast_error definition create public inheriting from casdk_cx_dynamic_exception.
+class casdk_cx_cast_error definition create public inheriting from casdk_cx_runtime_exception.
     public section.
         methods raise_exception redefinition.
 endclass.
 *--------------------------------------------------------------*
-
-constants casdk_typ_cx_invalid_type type casdk_type_name value 'CASDK_CX_INVALID_TYPE'.
 
 "! Raised when an invalid type is used
-class casdk_cx_invalid_type definition create public inheriting from casdk_cx_dynamic_exception.
+class casdk_cx_invalid_type definition create public inheriting from casdk_cx_runtime_exception.
     public section.
         methods raise_exception redefinition.
 endclass.
 *--------------------------------------------------------------*
-
-constants casdk_typ_cx_overflow_error type casdk_type_name value 'CASDK_CX_OVERFLOW_ERROR'.
 
 "! Raised when an overflow has presented
-class casdk_cx_overflow_error definition create public inheriting from casdk_cx_dynamic_exception.
+class casdk_cx_overflow_error definition create public inheriting from casdk_cx_runtime_exception.
     public section.
         methods raise_exception redefinition.
 endclass.
 *--------------------------------------------------------------*
-
-constants casdk_typ_cx_indexoutofbounds type casdk_type_name value 'CASDK_CX_INDEX_OUT_OF_BOUNDS'.
 
 "! Raised when an index is bigger that the supported range
-class casdk_cx_index_out_of_bounds definition create public inheriting from casdk_cx_dynamic_exception.
+class casdk_cx_index_out_of_bounds definition create public inheriting from casdk_cx_runtime_exception.
     public section.
         methods raise_exception redefinition.
 endclass.
 *--------------------------------------------------------------*
-
-constants casdk_typ_cx_numberformat type casdk_type_name value 'CASDK_CX_NUMBERFORMAT'.
 
 "! Raised when a string has the wrong format to be a number
-class casdk_cx_numberformat definition create public inheriting from casdk_cx_dynamic_exception.
+class casdk_cx_numberformat definition create public inheriting from casdk_cx_runtime_exception.
     public section.
         methods raise_exception redefinition.
 endclass.
 *--------------------------------------------------------------*
 
-constants casdk_typ_cx_arithmetic type casdk_type_name value 'CASDK_CX_ARITHMETIC'.
-
 "! Raised when an error occurs during an arithmetic operation
-class casdk_cx_arithmetic definition create public inheriting from casdk_cx_dynamic_exception.
+class casdk_cx_arithmetic definition create public inheriting from casdk_cx_runtime_exception.
     public section.
         methods raise_exception redefinition.
 endclass.
@@ -236,8 +215,6 @@ endclass.
 *--------------------------------------------------------------*
 * CLASSES                                                      *
 *--------------------------------------------------------------*
-
-constants casdk_typ_cl_object type casdk_type_name value 'CASDK_CL_OBJECT'.
 
 "! Base class for all CASDK objects
 class casdk_cl_object definition.
@@ -283,8 +260,6 @@ class casdk_cl_object definition.
         data attr_hash_code type casdk_raw_long value 0.
 endclass.
 *--------------------------------------------------------------*
-
-constants casdk_typ_cl_boolean type casdk_type_name value 'CASDK_CL_BOOLEAN'.
 
 "! Immutable Boolean wrapper for raw boolean values
 class casdk_cl_boolean definition create private inheriting from casdk_cl_object.
@@ -361,7 +336,35 @@ class casdk_cl_boolean definition create private inheriting from casdk_cl_object
 endclass.
 *--------------------------------------------------------------*
 
-constants casdk_typ_cl_integer type casdk_type_name value 'CASDK_CL_INTEGER'.
+"! Class with type related utilities
+class casdk_cl_type_utils definition create private final inheriting from casdk_cl_object.
+    public section.
+        "! Transforms a decimal number into a binary string representation
+        "! result format {sign}{integer_part}{.{fraction_part} OPTIONAL}
+        "! @parameter input    | Input number in decimal base
+        class-methods decimal_to_binary
+            importing value(input) type casdk_raw_float
+            returning value(result) type casdk_raw_string.
+
+        "! Transforms a binary string representation of a number into a decimal value
+        "! @parameter input    | Binary string representation
+        class-methods binary_to_decimal
+            importing value(input) type casdk_raw_string
+            returning value(result) type casdk_raw_float.
+
+        "! Evaluates if a given object or variable is a pointer
+        "! @parameter obj    | Object or Variable to be evaluated
+        class-methods is_pointer
+            importing value(obj)    type any
+            returning value(result) type casdk_raw_boolean.
+
+        "! Evaluates if a given object is a pointer with no reference
+        "! @parameter obj    | Object or Variable to be evaluated
+        class-methods is_null_pointer
+            importing value(obj)    type any
+            returning value(result) type casdk_raw_boolean.
+endclass.
+*--------------------------------------------------------------*
 
 " Immutable Integer wrapper for raw integer values
 class casdk_cl_integer definition create private inheriting from casdk_cl_object.
@@ -407,8 +410,6 @@ class casdk_cl_integer definition create private inheriting from casdk_cl_object
         data attr_value type casdk_raw_integer.
 endclass.
 *--------------------------------------------------------------*
-
-constants casdk_typ_cl_float type casdk_type_name value 'CASDK_CL_FLOAT'.
 
 " Immutable Float wrapper for raw float values
 class casdk_cl_float definition create private inheriting from casdk_cl_object.
@@ -459,8 +460,6 @@ class casdk_cl_float definition create private inheriting from casdk_cl_object.
 endclass.
 *--------------------------------------------------------------*
 
-constants casdk_typ_cl_long type casdk_type_name value 'CASDK_CL_LONG'.
-
 " Immutable Long wrapper for raw long values
 class casdk_cl_long definition create private inheriting from casdk_cl_object.
     public section.
@@ -505,8 +504,6 @@ class casdk_cl_long definition create private inheriting from casdk_cl_object.
         data attr_value type casdk_raw_long.
 endclass.
 *--------------------------------------------------------------*
-
-constants casdk_typ_cl_string type casdk_type_name value 'CASDK_CL_STRING'.
 
 " Immutable String wrapper for raw string values
 class casdk_cl_string definition create private inheriting from casdk_cl_object.
@@ -562,8 +559,6 @@ class casdk_cl_string definition create private inheriting from casdk_cl_object.
 endclass.
 *--------------------------------------------------------------*
 
-constants casdk_typ_cl_byte type casdk_type_name value 'CASDK_CL_BYTE'.
-
 " Immutable Byte wrapper for raw byte values
 class casdk_cl_byte definition create private inheriting from casdk_cl_object.
     public section.
@@ -584,8 +579,6 @@ class casdk_cl_byte definition create private inheriting from casdk_cl_object.
 endclass.
 *--------------------------------------------------------------*
 
-constants casdk_typ_cl_byte_string type casdk_type_name value 'CASDK_CL_BYTE_STRING'.
-
 " Immutable Byte String wrapper for raw byte string values
 class casdk_cl_byte_string definition create private inheriting from casdk_cl_object.
     public section.
@@ -602,8 +595,6 @@ class casdk_cl_byte_string definition create private inheriting from casdk_cl_ob
             returning value(result) type casdk_raw_boolean.
 endclass.
 *--------------------------------------------------------------*
-
-constants casdk_typ_cl_date type casdk_type_name value 'CASDK_CL_DATE'.
 
 " Immutable Date wrapper for raw date values
 class casdk_cl_date definition create private inheriting from casdk_cl_object.
@@ -624,8 +615,6 @@ class casdk_cl_date definition create private inheriting from casdk_cl_object.
 endclass.
 *--------------------------------------------------------------*
 
-constants casdk_typ_cl_time type casdk_type_name value 'CASDK_CL_TIME'.
-
 " Immutable Time wrapper for raw time values
 class casdk_cl_time definition create private inheriting from casdk_cl_object.
     public section.
@@ -644,40 +633,6 @@ class casdk_cl_time definition create private inheriting from casdk_cl_object.
             returning value(result) type casdk_raw_boolean.
 endclass.
 *--------------------------------------------------------------*
-
-constants casdk_typ_cl_type_utils type casdk_type_name value 'CASDK_CL_TYPE_UTILS'.
-
-"! Class with type related utilities
-class casdk_cl_type_utils definition create private final inheriting from casdk_cl_object.
-    public section.
-        "! Transforms a decimal number into a binary string representation
-        "! result format {sign}{integer_part}{.{fraction_part} OPTIONAL}
-        "! @parameter input    | Input number in decimal base
-        class-methods decimal_to_binary
-            importing value(input) type casdk_raw_float
-            returning value(result) type casdk_raw_string.
-
-        "! Transforms a binary string representation of a number into a decimal value
-        "! @parameter input    | Binary string representation
-        class-methods binary_to_decimal
-            importing value(input) type casdk_raw_string
-            returning value(result) type casdk_raw_float.
-
-        "! Evaluates if a given object or variable is a pointer
-        "! @parameter obj    | Object or Variable to be evaluated
-        class-methods is_pointer
-            importing value(obj)    type any
-            returning value(result) type casdk_raw_boolean.
-
-        "! Evaluates if a given object is a pointer with no reference
-        "! @parameter obj    | Object or Variable to be evaluated
-        class-methods is_null_pointer
-            importing value(obj)    type any
-            returning value(result) type casdk_raw_boolean.
-endclass.
-*--------------------------------------------------------------*
-
-constants casdk_typ_cl_list type casdk_type_name value 'CASDK_CL_LIST'.
 
 "! Data structure for storing and retrieving elements of different types
 class casdk_cl_list definition create private inheriting from casdk_cl_object.
@@ -743,8 +698,6 @@ class casdk_cl_list definition create private inheriting from casdk_cl_object.
 endclass.
 *--------------------------------------------------------------*
 
-constants casdk_typ_cl_console type casdk_type_name value 'CASDK_CL_CONSOLE'.
-
 "! Class with console utilities and helpers
 class casdk_cl_console definition create private final inheriting from casdk_cl_object.
     public section.
@@ -755,14 +708,14 @@ class casdk_cl_console definition create private final inheriting from casdk_cl_
         class-methods print
             importing value(obj) type any default casdk_empty
             raising casdk_cx_cast_error
-                    casdk_cx_dynamic_exception.
+                    casdk_cx_runtime_exception.
 
         "! Print to console a given object or variable and adds a new line at the end
         "! @parameter obj    | Object or Variable to be printed
         class-methods println
             importing value(obj) type any default casdk_empty
             raising casdk_cx_cast_error
-                    casdk_cx_dynamic_exception.
+                    casdk_cx_runtime_exception.
 
     private section.
         class-data is_print_line_size_set type casdk_raw_boolean value casdk_false.
@@ -771,7 +724,7 @@ class casdk_cl_console definition create private final inheriting from casdk_cl_
         "! Reduces the amount of characters available in the current report line.
         class-methods reduce_print_buffer
             importing value(amount) type casdk_raw_integer
-            raising casdk_cx_dynamic_exception.
+            raising casdk_cx_runtime_exception.
 
         "! Resets the amount of characters available to the value casdk_cl_console=>line_size
         class-methods reset_print_buffer.

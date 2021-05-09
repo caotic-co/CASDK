@@ -39,11 +39,11 @@ include: z_casdk_definition, z_casdk_implementation.
 
 class tests_exceptions definition for testing duration short risk level harmless.
   public section.
-    "! Validates the behavior of the casdk_cx_static_exception class.
-    methods test_cx_static_exception for testing.
+    "! Validates the behavior of the casdk_cx_exception class.
+    methods test_cx_exception for testing.
 
-    "! Validates the behavior of the casdk_cx_dynamic_exception class.
-    methods test_cx_dynamic_exception for testing.
+    "! Validates the behavior of the casdk_cx_runtime_exception class.
+    methods test_cx_runtime_exception for testing.
 
     "! Validates the behavior of the casdk_cx_nullpointer class.
     methods test_cx_nullpointer for testing.
@@ -54,6 +54,12 @@ class tests_exceptions definition for testing duration short risk level harmless
     "! Validates the behavior of the casdk_cx_invalid_type class.
     methods test_cx_invalid_type for testing.
 
+    "! Validates the behavior of the casdk_cx_overflow_error
+    methods test_cx_overflow_error for testing.
+
+    "! Validates the behavior of the casdk_cx_index_out_of_bounds
+    methods test_cx_index_out_of_bounds for testing.
+
     "! Validates the behavior of the casdk_cx_numberformat class.
     methods test_cx_numberformat for testing.
 
@@ -61,9 +67,9 @@ class tests_exceptions definition for testing duration short risk level harmless
     methods test_cx_arithmetic for testing.
 endclass.
 class tests_exceptions implementation.
-    method test_cx_static_exception.
+    method test_cx_exception.
         try.
-            new casdk_cx_static_exception(
+            new casdk_cx_exception(
                 msgv1 = 'Error (Part 1).'
                 msgv2 = 'Error (Part 2).'
                 msgv3 = 'Error (Part 3).'
@@ -71,21 +77,39 @@ class tests_exceptions implementation.
             )->raise_exception(  ).
             cl_aunit_assert=>fail( msg = 'CASE 1: No exception was raised' ).
         catch cx_root into data(e).
-            if e is not instance of casdk_cx_static_exception.
-                cl_aunit_assert=>fail( msg = 'CASE 1: The exception class that was raised was not of type "casdk_cx_static_exception"' ).
+            if e is not instance of casdk_cx_exception.
+                cl_aunit_assert=>fail( msg = 'CASE 1: The exception class that was raised was not of type "casdk_cx_exception"' ).
             endif.
-            data(cast_ex) = cast casdk_cx_static_exception( e ).
+            data(cast_ex) = cast casdk_cx_exception( e ).
             cl_aunit_assert=>assert_equals(
                 exp = 'Error (Part 1). Error (Part 2). Error (Part 3). Error (Part 4).'
                 act = cast_ex->get_message(  )
                 msg = 'CASE 1: The excpetion message does not match the parameters given'
             ).
         endtry.
+
+        cl_aunit_assert=>assert_equals(
+            exp = '«123456789123456789123456789123456789123456789»'
+            act = casdk_cx_exception=>string_to_quoted_cx_message( '123456789123456789123456789123456789123456789' )
+            msg = 'CASE 2: The string is not correctly quoted'
+        ).
+
+        cl_aunit_assert=>assert_equals(
+            exp = '«123456789123456789123456789123456789123456789...»'
+            act = casdk_cx_exception=>string_to_quoted_cx_message( '123456789123456789123456789123456789123456789abcdef' )
+            msg = 'CASE 3: The string is not correctly quoted'
+        ).
+
+        cl_aunit_assert=>assert_equals(
+            exp = '«»'
+            act = casdk_cx_exception=>string_to_quoted_cx_message( '' )
+            msg = 'CASE 4: The string is not correctly quoted'
+        ).
     endmethod.
 
-    method test_cx_dynamic_exception.
+    method test_cx_runtime_exception.
         try.
-            new casdk_cx_dynamic_exception(
+            new casdk_cx_runtime_exception(
                 msgv1 = 'Error (Part 1).'
                 msgv2 = 'Error (Part 2).'
                 msgv3 = 'Error (Part 3).'
@@ -93,10 +117,10 @@ class tests_exceptions implementation.
             )->raise_exception(  ).
             cl_aunit_assert=>fail( msg = 'CASE 1: No exception was raised' ).
         catch cx_root into data(e).
-            if e is not instance of casdk_cx_dynamic_exception.
-                cl_aunit_assert=>fail( msg = 'CASE 1: The exception class that was raised was not of type "casdk_cx_dynamic_exception"' ).
+            if e is not instance of casdk_cx_runtime_exception.
+                cl_aunit_assert=>fail( msg = 'CASE 1: The exception class that was raised was not of type "casdk_cx_runtime_exception"' ).
             endif.
-            data(cast_ex) = cast casdk_cx_dynamic_exception( e ).
+            data(cast_ex) = cast casdk_cx_runtime_exception( e ).
             cl_aunit_assert=>assert_equals(
                 exp = 'Error (Part 1). Error (Part 2). Error (Part 3). Error (Part 4).'
                 act = cast_ex->get_message(  )
@@ -163,6 +187,50 @@ class tests_exceptions implementation.
                 cl_aunit_assert=>fail( msg = 'CASE 1: The exception class that was raised was not of type "casdk_cx_invalid_type"' ).
             endif.
             data(cast_ex) = cast casdk_cx_invalid_type( e ).
+            cl_aunit_assert=>assert_equals(
+                exp = 'Error (Part 1). Error (Part 2). Error (Part 3). Error (Part 4).'
+                act = cast_ex->get_message(  )
+                msg = 'CASE 1: The excpetion message does not match the parameters given'
+            ).
+        endtry.
+    endmethod.
+
+    method test_cx_overflow_error.
+        try.
+            new casdk_cx_overflow_error(
+                msgv1 = 'Error (Part 1).'
+                msgv2 = 'Error (Part 2).'
+                msgv3 = 'Error (Part 3).'
+                msgv4 = 'Error (Part 4).'
+            )->raise_exception(  ).
+            cl_aunit_assert=>fail( msg = 'CASE 1: No exception was raised' ).
+        catch cx_root into data(e).
+            if e is not instance of casdk_cx_overflow_error.
+                cl_aunit_assert=>fail( msg = 'CASE 1: The exception class that was raised was not of type "casdk_cx_overflow_error"' ).
+            endif.
+            data(cast_ex) = cast casdk_cx_overflow_error( e ).
+            cl_aunit_assert=>assert_equals(
+                exp = 'Error (Part 1). Error (Part 2). Error (Part 3). Error (Part 4).'
+                act = cast_ex->get_message(  )
+                msg = 'CASE 1: The excpetion message does not match the parameters given'
+            ).
+        endtry.
+    endmethod.
+
+    method test_cx_index_out_of_bounds.
+        try.
+            new casdk_cx_index_out_of_bounds(
+                msgv1 = 'Error (Part 1).'
+                msgv2 = 'Error (Part 2).'
+                msgv3 = 'Error (Part 3).'
+                msgv4 = 'Error (Part 4).'
+            )->raise_exception(  ).
+            cl_aunit_assert=>fail( msg = 'CASE 1: No exception was raised' ).
+        catch cx_root into data(e).
+            if e is not instance of casdk_cx_index_out_of_bounds.
+                cl_aunit_assert=>fail( msg = 'CASE 1: The exception class that was raised was not of type "casdk_cx_index_out_of_bounds"' ).
+            endif.
+            data(cast_ex) = cast casdk_cx_index_out_of_bounds( e ).
             cl_aunit_assert=>assert_equals(
                 exp = 'Error (Part 1). Error (Part 2). Error (Part 3). Error (Part 4).'
                 act = cast_ex->get_message(  )

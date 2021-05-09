@@ -37,6 +37,8 @@ report z_3_test_boolean.
 
 include: z_casdk_definition, z_casdk_implementation.
 
+class lcl_abap_object definition inheriting from object. endclass.
+
 class tests_cl_boolean definition for testing duration short risk level harmless.
     public section.
         "! Validates the creation of objects matches the assigned raw boolean value.
@@ -65,6 +67,12 @@ class tests_cl_boolean definition for testing duration short risk level harmless
 
         "! Validates the string generated for the object.
         methods to_string for testing.
+
+        "! Validates the behavior of the method is_a_valid_raw_value
+        methods is_a_valid_raw_value for testing.
+
+        "! Validates the behavior of the method is_boolean_object
+        methods is_boolean_object for testing.
 endclass.
 class tests_cl_boolean implementation.
     method true_false_get_value.
@@ -481,6 +489,52 @@ class tests_cl_boolean implementation.
             exp = 'false'
             act = casdk_cl_boolean=>false( )->to_string(  )
             msg = 'CASE 2: The generated string should be false'
+        ).
+    endmethod.
+
+    method is_a_valid_raw_value.
+        data(casdK_bool_obj) = casdk_cl_boolean=>true(  ).
+        data(abap_obj) = new lcl_abap_object(  ).
+
+        cl_aunit_assert=>assert_equals(
+            exp = casdk_false
+            act = casdk_cl_boolean=>is_a_valid_raw_value( obj = casdK_bool_obj )
+            msg = 'CASE 1: casdK_bool_obj should not be a valid boolean raw value'
+        ).
+
+        cl_aunit_assert=>assert_equals(
+            exp = casdk_false
+            act = casdk_cl_boolean=>is_a_valid_raw_value( obj = abap_obj )
+            msg = 'CASE 2: abap_obj should not be a valid boolean raw value'
+        ).
+
+        cl_aunit_assert=>assert_equals(
+            exp = casdk_true
+            act = casdk_cl_boolean=>is_a_valid_raw_value( obj = casdk_true )
+            msg = 'CASE 3: casdk_true should be a valid boolean raw value'
+        ).
+    endmethod.
+
+    method is_boolean_object.
+        data(casdK_bool_obj) = casdk_cl_boolean=>true(  ).
+        data(abap_obj) = new lcl_abap_object(  ).
+
+        cl_aunit_assert=>assert_equals(
+            exp = casdk_true
+            act = casdk_cl_boolean=>is_boolean_object( obj = casdK_bool_obj )
+            msg = 'CASE 1: casdK_bool_obj should be a casdk_cl_boolean'
+        ).
+
+        cl_aunit_assert=>assert_equals(
+            exp = casdk_false
+            act = casdk_cl_boolean=>is_boolean_object( obj = abap_obj )
+            msg = 'CASE 2: abap_obj should not be a casdk_cl_boolean'
+        ).
+
+        cl_aunit_assert=>assert_equals(
+            exp = casdk_false
+            act = casdk_cl_boolean=>is_boolean_object( obj = casdk_true )
+            msg = 'CASE 3: casdk_true should not be a casdk_cl_boolean'
         ).
     endmethod.
 endclass.
