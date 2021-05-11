@@ -1,5 +1,5 @@
 *--------------------------------------------------------------*
-* Test z_0_test_metadata                                        *
+* Test z_0_test_utils                                        *
 *--------------------------------------------------------------*
 * Author: Camilo A. Ospina A.                                  *
 * Version: 1.0.0                                               *
@@ -32,56 +32,48 @@
 * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.       *
 *--------------------------------------------------------------*
 
-"! Tests for casdk_cl_metadata
-report z_0_test_metadata.
+"! Tests for casdk_utils
+report z_0_test_utils.
 
 include: z_casdk_definition, z_casdk_implementation.
 
-class tests_cl_metadata definition for testing duration short risk level harmless.
+class utils_tests definition for testing duration short risk level harmless.
     public section.
-        "! Validates the full version is correctly generated
-        methods full_version for testing.
+        "! Validates references are correctly evaluated
+        methods is_pointer for testing.
 
-        "! Validates the major version is correctly generated
-        methods major_version for testing.
-
-        "! Validates the minor version is correctly generated
-        methods minor_version for testing.
-
-        "! Validates the patch version is correctly generated
-        methods patch_version for testing.
-
+        "! Validates empty references are correctly evaluated
+        methods is_null_pointer for testing.
 endclass.
-class tests_cl_metadata implementation.
-    method full_version.
+class utils_tests implementation.
+    method is_pointer.
+        data obj type ref to casdk_object.
         cl_aunit_assert=>assert_equals(
-            exp = '1.0.0'
-            act = casdk_cl_metadata=>full_version(  )
-            msg = 'CASE 1: The generated version does not match the expected one'
+            exp = casdk_true
+            act = casdk_utils=>is_pointer( obj )
+            msg = 'CASE 1: The given object is not a pointer'
+        ).
+
+        cl_aunit_assert=>assert_equals(
+            exp = casdk_false
+            act = casdk_utils=>is_pointer( 'Not a pointer' )
+            msg = 'CASE 2: The given object shoud not be a pointer'
         ).
     endmethod.
 
-    method major_version.
+    method is_null_pointer.
+        data obj type ref to casdk_object.
         cl_aunit_assert=>assert_equals(
-            exp = 1
-            act = casdk_cl_metadata=>major_version
-            msg = 'CASE 1: The generated major version does not match the expected one'
+            exp = casdk_true
+            act = casdk_utils=>is_null_pointer( obj )
+            msg = 'CASE 1: The given object is not a null pointer'
         ).
-    endmethod.
 
-    method minor_version.
+        obj = new casdk_object(  ).
         cl_aunit_assert=>assert_equals(
-            exp = 0
-            act = casdk_cl_metadata=>minor_version
-            msg = 'CASE 1: The generated minor version does not match the expected one'
-        ).
-    endmethod.
-
-    method patch_version.
-        cl_aunit_assert=>assert_equals(
-            exp = 0
-            act = casdk_cl_metadata=>patch_version
-            msg = 'CASE 1: The generated patch version does not match the expected one'
+            exp = casdk_false
+            act = casdk_utils=>is_null_pointer( obj )
+            msg = 'CASE 2: The given object shoud not be a null pointer'
         ).
     endmethod.
 endclass.

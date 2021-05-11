@@ -32,18 +32,18 @@
 * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.       *
 *--------------------------------------------------------------*
 
-"! Test for casdk_cl_object
+"! Test for casdk_object
 report z_2_test_object.
 
 include: z_casdk_definition, z_casdk_implementation.
 
-class lcl_classname definition inheriting from casdk_cl_object. endclass.
-class lcl_hash_code1 definition inheriting from casdk_cl_object. endclass.
-class lcl_hash_code2 definition inheriting from casdk_cl_object. endclass.
-class lcl_to_string definition inheriting from casdk_cl_object. endclass.
+class lcl_classname definition inheriting from casdk_object. endclass.
+class lcl_hash_code1 definition inheriting from casdk_object. endclass.
+class lcl_hash_code2 definition inheriting from casdk_object. endclass.
+class lcl_to_string definition inheriting from casdk_object. endclass.
 class lcl_abap_object definition inheriting from object. endclass.
 
-class tests_cl_object definition for testing duration short risk level harmless.
+class object_tests definition for testing duration short risk level harmless.
   public section.
 
     "! Validates the class_name is correct.
@@ -58,15 +58,15 @@ class tests_cl_object definition for testing duration short risk level harmless.
    "! Validates the string generated for the object.
     methods to_string for testing.
 
-    "! Validates if a given object is a casdk_cl_object.
+    "! Validates if a given object is a casdk_object.
     methods is_object for testing.
 endclass.
-class tests_cl_object implementation.
+class object_tests implementation.
     method class_name.
-        data obj type ref to casdk_cl_object.
-        obj = new casdk_cl_object(  ).
+        data obj type ref to casdk_object.
+        obj = new casdk_object(  ).
 
-        if not ( obj->class_name(  ) = 'CASDK_CL_OBJECT' ).
+        if not ( obj->class_name(  ) = 'CASDK_OBJECT' ).
             cl_aunit_assert=>fail(
                 msg = 'CASE 1: The class name is incorrect'
             ).
@@ -93,10 +93,10 @@ class tests_cl_object implementation.
     endmethod.
 
     method equals.
-        data obj1 type ref to casdk_cl_object.
-        data obj2 type ref to casdk_cl_object.
+        data obj1 type ref to casdk_object.
+        data obj2 type ref to casdk_object.
 
-        obj1 = new casdk_cl_object(  ).
+        obj1 = new casdk_object(  ).
         obj2 = obj1.
         cl_aunit_assert=>assert_equals(
             exp = casdk_true
@@ -104,15 +104,15 @@ class tests_cl_object implementation.
             msg = 'CASE 1: obj1 and obj2 should equal'
         ).
 
-        obj1 = new casdk_cl_object(  ).
-        obj2 = new casdk_cl_object(  ).
+        obj1 = new casdk_object(  ).
+        obj2 = new casdk_object(  ).
         cl_aunit_assert=>assert_equals(
             exp = casdk_false
             act = obj1->equals( obj2 )
             msg = 'CASE 2: obj1 and obj2 should not be equal'
         ).
 
-        obj1 = new casdk_cl_object(  ).
+        obj1 = new casdk_object(  ).
         clear obj2.
         cl_aunit_assert=>assert_equals(
             exp = casdk_false
@@ -124,8 +124,8 @@ class tests_cl_object implementation.
 
 
     method hash_code.
-        data obj1 type ref to casdk_cl_object.
-        data obj2 type ref to casdk_cl_object.
+        data obj1 type ref to casdk_object.
+        data obj2 type ref to casdk_object.
 
         obj1 = new lcl_hash_code1(  ).
         obj2 = new lcl_hash_code2(  ).
@@ -174,7 +174,7 @@ class tests_cl_object implementation.
     endmethod.
 
     method to_string.
-        data obj type ref to casdk_cl_object.
+        data obj type ref to casdk_object.
         obj = new lcl_to_string(  ).
         if not ( obj->to_string(  ) = 'LCL_TO_STRING@0'  ).
             cl_aunit_assert=>fail(
@@ -191,19 +191,19 @@ class tests_cl_object implementation.
     endmethod.
 
     method is_object.
-        data(casdK_obj) = new casdk_cl_object(  ).
+        data(casdK_obj) = new casdk_object(  ).
         data(abap_obj) = new lcl_abap_object(  ).
 
         cl_aunit_assert=>assert_equals(
             exp = casdk_true
-            act = casdk_cl_object=>is_object( obj = casdK_obj )
-            msg = 'CASE 1: casdK_obj should be a casdk_cl_object'
+            act = casdk_object=>is_object( obj = casdK_obj )
+            msg = 'CASE 1: casdK_obj should be a casdk_object'
         ).
 
         cl_aunit_assert=>assert_equals(
             exp = casdk_false
-            act = casdk_cl_object=>is_object( obj = abap_obj )
-            msg = 'CASE 2: abap_obj should not be a casdk_cl_object'
+            act = casdk_object=>is_object( obj = abap_obj )
+            msg = 'CASE 2: abap_obj should not be a casdk_object'
         ).
     endmethod.
 endclass.

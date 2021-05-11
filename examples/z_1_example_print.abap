@@ -40,18 +40,18 @@ include: z_casdk_definition, z_casdk_implementation.
 start-of-selection.
 
     "Simple print with new line.
-    casdk_cl_console=>println( 'Example 1: Hello World' ).
+    casdk_console=>println( 'Example 1: Hello World' ).
 
     "Multiple simple prints with no new line.
-    casdk_cl_console=>print( 'Example 2: ' ).
-    casdk_cl_console=>print( 'a, ' ).
-    casdk_cl_console=>print( 'b, ' ).
-    casdk_cl_console=>print( 'c, ' ).
-    casdk_cl_console=>print( 'd, ' ).
-    casdk_cl_console=>print( 'e\n' ).
+    casdk_console=>print( 'Example 2: ' ).
+    casdk_console=>print( 'a, ' ).
+    casdk_console=>print( 'b, ' ).
+    casdk_console=>print( 'c, ' ).
+    casdk_console=>print( 'd, ' ).
+    casdk_console=>print( 'e\n' ).
 
     "Long text print
-    casdk_cl_console=>println(
+    casdk_console=>println(
         'Example 3:' &&
         'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' &&
         'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb' &&
@@ -62,4 +62,4 @@ start-of-selection.
     ).
 
     "Multiple Lines print.
-    casdk_cl_console=>println( 'Example 4:\nLine1\nLine2\nLine3\nLine4' ).
+    casdk_console=>println( 'Example 4:\nLine1\nLine2\nLine3\nLine4' ).
