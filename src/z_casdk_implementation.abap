@@ -95,7 +95,7 @@ class casdk_exception implementation.
                 msgv4 = me->if_t100_dyn_msg~msgv4.
     endmethod.
 
-    method string_to_quoted_cx_message.
+    method generate_exception_message.
         if strlen( text ) <= 45.
             concatenate '«' text '»' into quoted_text respecting blanks.
         else.

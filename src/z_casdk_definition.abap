@@ -43,16 +43,16 @@
 *--------------------------------------------------------------*
 
 types:
-    casdk_raw_boolean       type c length 1,
-    casdk_raw_string        type string,
-    casdk_raw_integer       type i,
-    casdk_raw_float         type p length 16 decimals 14,
-    casdk_raw_long          type p length 16 decimals 0,
-    casdk_raw_byte          type x length 4,
-    casdk_raw_byte_string   type xstring,
-    casdk_raw_date          type d,
-    casdk_raw_time          type t,
-    casdk_raw_cx_message    type c length 50.
+    casdk_raw_boolean              type c length 1,
+    casdk_raw_string               type string,
+    casdk_raw_integer              type i,
+    casdk_raw_float                type p length 16 decimals 14,
+    casdk_raw_long                 type p length 16 decimals 0,
+    casdk_raw_byte                 type x length 4,
+    casdk_raw_byte_string          type xstring,
+    casdk_raw_date                 type d,
+    casdk_raw_time                 type t,
+    casdk_raw_exception_message    type c length 50.
 
 
 *--------------------------------------------------------------*
@@ -82,10 +82,10 @@ class casdk_exception definition create public inheriting from cx_static_check.
         "! @parameter msgv3    | Third message line of the exceptions's reason
         "! @parameter msgv4    | Fourth message line of the exceptions's reason
         methods constructor
-            importing value(msgv1) type casdk_raw_cx_message optional
-                      value(msgv2) type casdk_raw_cx_message optional
-                      value(msgv3) type casdk_raw_cx_message optional
-                      value(msgv4) type casdk_raw_cx_message optional.
+            importing value(msgv1) type casdk_raw_exception_message optional
+                      value(msgv2) type casdk_raw_exception_message optional
+                      value(msgv3) type casdk_raw_exception_message optional
+                      value(msgv4) type casdk_raw_exception_message optional.
 
         "! Returns the full message associated to the exception
         methods get_message
@@ -97,9 +97,9 @@ class casdk_exception definition create public inheriting from cx_static_check.
 
         "! Returns a quoted representation of a string.
         "! @parameter text    | Raw string to be quoted.
-        class-methods string_to_quoted_cx_message
+        class-methods generate_exception_message
             importing value(text) type casdk_raw_string
-            returning value(quoted_text) type casdk_raw_cx_message.
+            returning value(quoted_text) type casdk_raw_exception_message.
 endclass.
 *--------------------------------------------------------------*
 
@@ -114,10 +114,10 @@ class casdk_runtime_exception definition create public inheriting from cx_dynami
         "! @parameter msgv3    | Third message line of the exceptions's reason
         "! @parameter msgv4    | Fourth message line of the exceptions's reason
         methods constructor
-            importing value(msgv1) type casdk_raw_cx_message optional
-                      value(msgv2) type casdk_raw_cx_message optional
-                      value(msgv3) type casdk_raw_cx_message optional
-                      value(msgv4) type casdk_raw_cx_message optional.
+            importing value(msgv1) type casdk_raw_exception_message optional
+                      value(msgv2) type casdk_raw_exception_message optional
+                      value(msgv3) type casdk_raw_exception_message optional
+                      value(msgv4) type casdk_raw_exception_message optional.
 
         "! Returns the full message associated to the exception
         methods get_message
