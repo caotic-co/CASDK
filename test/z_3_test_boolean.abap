@@ -101,6 +101,16 @@ class boolean_tests implementation.
             act = casdk_boolean=>value_of( casdk_false )->get_value(  )
             msg = 'CASE 2: The Boolean object value is not false'
         ).
+
+        try.
+            data empty_boolean type ref to casdk_boolean.
+            casdk_boolean=>value_of( empty_boolean ).
+            cl_aunit_assert=>fail(
+                msg = 'CASE 3: A casdk_nullpointer_exception should have been raised'
+            ).
+        catch casdk_nullpointer_exception into data(e).
+            " Do Nothing
+        endtry.
     endmethod.
 
     method logical_not.

@@ -405,16 +405,14 @@ class casdk_boolean implementation.
             endif.
             return.
         endif.
-        if casdk_object=>is_object( obj ) = casdk_true.
-            if obj is initial.
-                new casdk_nullpointer_exception( msgv1 = 'Initial objects can not be interpreted as booleans' )->raise_exception(  ).
-            endif.
-            if casdk_boolean=>is_boolean_object( obj ) = casdk_true.
-                result = cast casdk_boolean( obj ).
-                return.
-            endif.
-         endif.
-         new casdk_cast_exception( msgv1 = 'The value can not be interpreted as boolean' )->raise_exception(  ).
+        if casdk_utils=>is_null_pointer( obj ) = casdk_true.
+            new casdk_nullpointer_exception( msgv1 = 'Null pointers can not be interpreted as booleans' )->raise_exception(  ).
+        endif.
+        if casdk_boolean=>is_boolean_object( obj ) = casdk_true.
+            result = cast casdk_boolean( obj ).
+            return.
+        endif.
+        new casdk_cast_exception( msgv1 = 'The value can not be interpreted as boolean' )->raise_exception(  ).
     endmethod.
 
     method logical_not.
@@ -525,8 +523,8 @@ class casdk_string implementation.
                 result = cast casdk_string( obj ).
                 return.
             endif.
-         endif.
-         new casdk_cast_exception( msgv1 = 'The value can not be interpreted as a string' )->raise_exception(  ).
+        endif.
+        new casdk_cast_exception( msgv1 = 'The value can not be interpreted as a string' )->raise_exception(  ).
     endmethod.
 endclass.
 *--------------------------------------------------------------*
