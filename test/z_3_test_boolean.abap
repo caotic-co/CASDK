@@ -108,7 +108,17 @@ class boolean_tests implementation.
             cl_aunit_assert=>fail(
                 msg = 'CASE 3: A casdk_nullpointer_exception should have been raised'
             ).
-        catch casdk_nullpointer_exception into data(e).
+        catch casdk_nullpointer_exception into data(ne).
+            " Do Nothing
+        endtry.
+
+         try.
+            data(any_object) = new casdk_object(  ).
+            casdk_boolean=>value_of( any_object ).
+            cl_aunit_assert=>fail(
+                msg = 'CASE 4: A casdk_cast_exception should have been raised'
+            ).
+        catch casdk_cast_exception into data(ce).
             " Do Nothing
         endtry.
     endmethod.

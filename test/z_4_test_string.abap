@@ -44,6 +44,9 @@ class string_tests definition for testing duration short risk level harmless.
 
         "! Validates replacing text in a given string works fine.
         methods replace for testing.
+
+        "! Validates the creation of objects matches the assigned raw boolean value.
+        methods value_of_get_value for testing.
 endclass.
 
 class string_tests implementation.
@@ -113,5 +116,39 @@ class string_tests implementation.
             )->get_value(  )
             msg = 'CASE 3: The replace does not match the expected result'
         ).
+    endmethod.
+
+    method value_of_get_value.
+        cl_aunit_assert=>assert_equals(
+            exp = 'ABC'
+            act = casdk_string=>value_of( 'ABC' )->get_value(  )
+            msg = 'CASE 1: The obtained string does not match the expected result'
+        ).
+
+        cl_aunit_assert=>assert_equals(
+            exp = '123'
+            act = casdk_string=>value_of( 123 )->get_value(  )
+            msg = 'CASE 2: The obtained string does not match the expected result'
+        ).
+
+        try.
+            data empty_object type ref to casdk_object.
+            casdk_string=>value_of( empty_object ).
+            cl_aunit_assert=>fail(
+                msg = 'CASE 3: A casdk_nullpointer_exception should have been raised'
+            ).
+        catch casdk_nullpointer_exception into data(ne).
+            " Do Nothing
+        endtry.
+
+        try.
+            data(any_object) = new casdk_object(  ).
+            casdk_string=>value_of( any_object ).
+            cl_aunit_assert=>fail(
+                msg = 'CASE 4: A casdk_cast_exception should have been raised'
+            ).
+        catch casdk_cast_exception into data(ce).
+            " Do Nothing
+        endtry.
     endmethod.
 endclass.

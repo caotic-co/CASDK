@@ -456,7 +456,7 @@ class casdk_string implementation.
     " Public Instance Methods
     method constructor.
         super->constructor(  ).
-        me->attr_value = value.
+         me->attr_value = value.
     endmethod.
 
     method get_value.
@@ -515,14 +515,19 @@ class casdk_string implementation.
             result =  new casdk_string( obj ).
             return.
         endif.
-        if casdk_object=>is_object( obj ) = casdk_true.
-            if obj is initial.
-                new casdk_nullpointer_exception( msgv1 = 'Initial objects can not be interpreted as strings' )->raise_exception(  ).
-            endif.
-            if casdk_string=>is_string_object( obj ) = casdk_true.
-                result = cast casdk_string( obj ).
-                return.
-            endif.
+        if casdk_integer=>is_a_valid_raw_value( obj ) = casdk_true.
+            data string_val type casdk_raw_string.
+            string_val = obj.
+            condense string_val.
+            result =  new casdk_string( string_val ).
+            return.
+        endif.
+        if casdk_utils=>is_null_pointer( obj ) = casdk_true.
+            new casdk_nullpointer_exception( msgv1 = 'Null pointers can not be interpreted as strings' )->raise_exception(  ).
+        endif.
+        if casdk_string=>is_string_object( obj ) = casdk_true.
+            result = cast casdk_string( obj ).
+            return.
         endif.
         new casdk_cast_exception( msgv1 = 'The value can not be interpreted as a string' )->raise_exception(  ).
     endmethod.
