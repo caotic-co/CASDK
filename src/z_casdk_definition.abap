@@ -557,6 +557,55 @@ class casdk_time definition create private inheriting from casdk_object.
 endclass.
 *--------------------------------------------------------------*
 
+" Wrapper for standard ABAP tables that emulates the behavior of lists in other programming languages
+class casdk_list definition create private inheriting from casdk_object.
+    public section.
+
+        "! Returns an object stored at a given index
+        "! @parameter index    | Integer raw value with the position of the object to retrieve
+        methods get
+            importing value(index) type casdk_raw_integer
+            returning value(result) type ref to casdk_object
+            raising casdk_index_out_of_bounds_ex.
+
+        "! Returns the current size of the list
+        methods size
+            returning value(result) type casdk_raw_integer.
+
+        "! Appends an object to the end of the list
+        "! @parameter obj    | Object to be stored
+        methods add
+            importing value(obj) type ref to casdk_object.
+
+        "! Adds an object at a given index of the list
+        "! @parameter index    | Integer raw value with the position where the object should be inserted
+        "! @parameter obj      | Object to be stored
+        methods add_at_index
+            importing value(index) type casdk_raw_integer
+                      value(obj) type ref to casdk_object
+            raising casdk_index_out_of_bounds_ex.
+
+        "! Removes an object stored at a given index
+        "! @parameter index    | Integer raw value with the position of the object to remove
+        methods remove
+            importing value(index) type casdk_raw_integer
+            returning value(result) type ref to casdk_object
+            raising casdk_index_out_of_bounds_ex.
+
+        "! Returns a new empty casdk_list object
+        class-methods create_empty_list
+            returning value(result) type ref to casdk_list.
+
+    private section.
+        types:
+            begin of list_element,
+                obj type ref to casdk_object,
+            end of list_element.
+
+        data attr_list type standard table of list_element with empty key.
+endclass.
+*--------------------------------------------------------------*
+
 "! Class with console utilities and helpers
 class casdk_console definition create private final inheriting from casdk_object.
     public section.

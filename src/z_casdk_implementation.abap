@@ -908,6 +908,57 @@ class casdk_time implementation.
 endclass.
 *--------------------------------------------------------------*
 
+class casdk_list implementation.
+    method get.
+        if index < 0 or index > ( me->size(  ) - 1 ).
+            new casdk_index_out_of_bounds_ex(
+                msgv1 = 'The index «' && index && '» is out of bounds'
+            )->raise_exception(  ).
+        endif.
+        index = index + 1.
+        read table me->attr_list into data(element) index index.
+        result = element-obj.
+    endmethod.
+
+    method size.
+        result = lines( me->attr_list ).
+    endmethod.
+
+    method add.
+        data element type list_element.
+        element-obj = obj.
+        append element to me->attr_list.
+    endmethod.
+
+    method add_at_index.
+        if index < 0 or index > ( me->size(  ) - 1 ).
+            new casdk_index_out_of_bounds_ex(
+                msgv1 = 'The index «' && index && '» is out of bounds'
+            )->raise_exception(  ).
+        endif.
+        index = index + 1.
+
+        data element type list_element.
+        element-obj = obj.
+        insert element into me->attr_list index index.
+    endmethod.
+
+    method remove.
+        if index < 0 or index > ( me->size(  ) - 1 ).
+            new casdk_index_out_of_bounds_ex(
+                msgv1 = 'The index «' && index && '» is out of bounds'
+            )->raise_exception(  ).
+        endif.
+        index = index + 1.
+        delete me->attr_list index: index.
+    endmethod.
+
+    method create_empty_list.
+        result = new casdk_list(  ).
+    endmethod.
+endclass.
+*--------------------------------------------------------------*
+
 class casdk_console implementation.
     " Public Static Methods
     method print.
