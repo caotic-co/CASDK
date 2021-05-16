@@ -662,6 +662,7 @@ class casdk_float implementation.
 
     method to_string.
         result = me->attr_value.
+        condense result no-gaps.
     endmethod.
 
 
@@ -791,6 +792,8 @@ class casdk_long implementation.
     endmethod.
 
     method to_string.
+        result = me->attr_value.
+        condense result no-gaps.
     endmethod.
 
     " Public Static Methods
@@ -812,6 +815,7 @@ class casdk_long implementation.
     endmethod.
 
     method value_of.
+        result = new casdk_long( obj ).
     endmethod.
 endclass.
 *--------------------------------------------------------------*
@@ -953,6 +957,41 @@ class casdk_list implementation.
         delete me->attr_list index: index.
     endmethod.
 
+    method hash_code.
+    endmethod.
+
+    method equals.
+    endmethod.
+
+    method to_string.
+        if me->size(  ) = 0.
+            result = '[]'.
+            return.
+        endif.
+        result = '['.
+        data(i) = 1.
+        loop at me->attr_list assigning field-symbol(<element>).
+            data(obj) = <element>-obj.
+            data repr type casdk_raw_string.
+            if casdk_utils=>is_null_pointer( obj ).
+                concatenate casdk_null casdk_empty into repr respecting blanks.
+            elseif obj is instance of casdk_string.
+                data(obj_as_string) = obj->to_string(  ).
+                concatenate `'` obj_as_string `'` into repr respecting blanks.
+            else.
+                obj_as_string = obj->to_string(  ).
+                concatenate obj_as_string casdk_empty into repr respecting blanks.
+            endif.
+            if i = 1.
+                concatenate result repr into result respecting blanks.
+            else.
+                concatenate result ', ' repr into result respecting blanks.
+            endif.
+            i = i + 1.
+        endloop.
+        concatenate result ']' into result respecting blanks.
+    endmethod.
+
     method create_empty_list.
         result = new casdk_list(  ).
     endmethod.
@@ -984,7 +1023,11 @@ class casdk_console implementation.
                 out = cast_runtime_exception->get_message(  ).
             elseif obj is instance of casdk_object.
                 data(cast_obj) = cast casdk_object( obj ).
-                out = cast_obj->to_string(  ).
+                if casdk_utils=>is_null_pointer( cast_obj ).
+                    out = casdk_null.
+                else.
+                    out = cast_obj->to_string(  ).
+                endif.
             else.
                 new casdk_cast_exception(
                     msgv1 = 'The print method could not'

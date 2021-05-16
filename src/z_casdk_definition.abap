@@ -61,6 +61,7 @@ types:
 
 constants:
     casdk_version type casdk_raw_string value '1.0.0',
+    casdk_null    type casdk_raw_string  value 'CASDK@_Null',
     casdk_empty   type casdk_raw_string  value '',
     casdk_space   type casdk_raw_string  value ' ',
     casdk_true    type casdk_raw_boolean value 'X',
@@ -591,6 +592,10 @@ class casdk_list definition create private inheriting from casdk_object.
             importing value(index) type casdk_raw_integer
             returning value(result) type ref to casdk_object
             raising casdk_index_out_of_bounds_ex.
+
+        methods hash_code redefinition.
+        methods equals redefinition.
+        methods to_string redefinition.
 
         "! Returns a new empty casdk_list object
         class-methods create_empty_list
